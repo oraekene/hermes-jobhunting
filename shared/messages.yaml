@@ -1,0 +1,230 @@
+# messages.yaml — every string a user reads
+#
+# One file, keyed ids, no internal names. `msg.py check` fails the build if a
+# skill directory name, gate id, file path, rule number or config key reaches
+# any string in here.
+#
+# THREE AUDIENCES, and only one of them is served by this file.
+#
+#   user, ordinary      plain language, no machinery.            -> here
+#   user, safety        specific about WHAT HAPPENED and what it
+#                       means for them, still no machinery.      -> here
+#   you, support        full detail, file paths, gate ids, stack
+#                       traces. Written to the local log with a
+#                       short code the user can quote.           -> NOT here
+#
+# The reconciliation that took a while to find: specificity is about
+# consequence, not mechanism. "I stopped before submitting because this
+# application has not been approved yet" is completely specific and mentions
+# nothing about hooks, tables or rules.
+#
+# Variables use {braces} and must be declared in `vars`.
+
+meta:
+  version: 1
+  tone: >
+    First person, present tense, short sentences. Say what happened and what
+    happens next. Never apologise twice. Never explain the machinery. Never use
+    the word "error" to a user — describe the situation instead.
+
+messages:
+
+  # ── the pipeline is working ───────────────────────────────────────────────
+  progress:
+    found:
+      text: "Found {count} roles worth a look today."
+      vars: [count]
+    building:
+      text: "Working through {count} applications. I will bring you each one when it is ready."
+      vars: [count]
+    ready:
+      text: >
+        {role} at {company}. Everything is filled in and ready to send.
+        Reply approve to send it, edit to change something, or skip.
+      vars: [role, company]
+    batch_ready:
+      text: >
+        {count} applications are ready. Reply approve all to send them,
+        or a number to look at one on its own.
+      vars: [count]
+    nothing_today:
+      text: >
+        Nothing worth applying to today. That happens — a thin week is
+        information, not a fault. I will keep looking.
+    paused:
+      text: "Paused until {date}. I will still talk, and I will still keep your journal."
+      vars: [date]
+
+  # ── refusals: specific about consequence, silent about mechanism ──────────
+  blocked:
+    not_approved:
+      text: >
+        I stopped before sending this. It has not been approved yet, and I do
+        not send applications you have not seen.
+    no_evidence:
+      text: >
+        I left out a claim about {topic} — I could not find anything in what
+        you have told me that backs it up. I have made a note so we can fill
+        that gap when you have a minute.
+      vars: [topic]
+    sensitive:
+      text: >
+        This would mention something personal you asked me to be careful with.
+        Do you want it included this once?
+    cannot_send_here:
+      text: >
+        I have written the message, but I cannot send it on this platform —
+        you will need to send it yourself. It is ready to copy.
+    posting_gone:
+      text: >
+        The {role} posting at {company} was taken down before you saw it.
+        I have dropped it rather than send an application into nothing.
+      vars: [role, company]
+    daily_limit:
+      text: >
+        That is your limit for today. It resets tomorrow, and you can change
+        the number any time.
+    injected_text:
+      text: >
+        This posting contains text aimed at automated tools rather than at
+        applicants. I have not used it.
+    outside_process:
+      text: >
+        This text asks for your details to be sent somewhere outside the normal
+        application process. I have not done it.
+
+  # ── permissions ───────────────────────────────────────────────────────────
+  permissions:
+    asking_summary:
+      text: "{asking} of {total} things I check with you first. {auto} I do on my own."
+      vars: [asking, total, auto]
+    batch_offer:
+      text: >
+        I could send five at a time instead of one by one — the same review, a
+        fifth of the messages. Most people find that fixes it.
+    code_sent:
+      text: >
+        Because this one cannot be undone, I have sent a code to your phone
+        rather than take my own word for it. Send it back and I will stop
+        asking. That way a stray instruction in a job posting can never switch
+        it off.
+    armed:
+      text: >
+        Done — I will stop asking before {label} for {days} days. Your daily
+        limit still applies, everything I do this way is recorded, and on
+        {until} I start asking again.
+      vars: [label, days, until]
+    lapsed:
+      text: >
+        The {days} days are up, so I am asking before {label} again. Say the
+        word if you want another stretch.
+      vars: [days, label]
+    never_off:
+      text: >
+        I cannot turn that one off. {reason}
+      vars: [reason]
+    reason_pairing:
+      text: >
+        Every other approval means nothing if anyone can send it, so the check
+        on who is allowed to approve stays on.
+    reason_sensitive:
+      text: >
+        Recording something personal is free and always will be. Whether it
+        appears in a document that goes to an employer is a decision I ask you
+        for every single time.
+
+  # ── setup ─────────────────────────────────────────────────────────────────
+  setup:
+    welcome:
+      text: >
+        Let us get you running. About twenty-five minutes, and we finish with a
+        real application ready for you to look at — not a settings screen.
+    first_question:
+      text: >
+        First: do you have paid work history to draw on, or are you coming into
+        this field fresh? It changes almost everything else I ask.
+    one_source:
+      text: >
+        One job board to start with. One that works beats five that half do —
+        we can add more once you have seen it run.
+    baseline:
+      text: >
+        Two quick ones so I can show you progress later: roughly how many
+        applications did you send in the last six months, and roughly how many
+        replies did you get? A rough number is fine, and you can skip this.
+    done:
+      text: >
+        That is everything I need. Here is your first application — have a look
+        and tell me what you think.
+
+  # ── outcomes ──────────────────────────────────────────────────────────────
+  outcome:
+    interview:
+      text: "{company} want to talk to you. Shall I put a prep brief together?"
+      vars: [company]
+    rejection:
+      text: >
+        {company} said no. Logged. That is {count} this month, which is a normal
+        number and not a verdict on you.
+      vars: [company, count]
+    milestone:
+      text: >
+        Worth noticing: {rate} of your applications have come back with
+        something, against {baseline} before you started. That is {multiple}
+        times better.
+      vars: [rate, baseline, multiple]
+    share_offer:
+      text: >
+        Those numbers are good enough to be worth saying out loud. I can draft
+        something in your own voice — you would see it before it went anywhere.
+
+  # ── problems: the only place that names a code ────────────────────────────
+  problem:
+    incomplete_setup:
+      text: >
+        Some of what I need is missing, so I have stopped rather than guess.
+        Quote {code} if you get in touch. [{code}]
+      vars: [code]
+    data_unreadable:
+      text: >
+        I could not read your saved history, so I have not written anything to
+        it. Quote {code} if you get in touch. [{code}]
+      vars: [code]
+    container_notice:
+      text: >
+        You are running inside a container. Your computer is well protected, and
+        one of the three checks I make before sending an application does not
+        apply here — the other two still do.
+    settings_changed:
+      text: >
+        Your settings changed since we started, so I have stopped and changed
+        nothing. If that was you, say so and I will carry on.
+    generic:
+      text: "Something went wrong on my side. Nothing was sent or changed. [{code}]"
+      vars: [code]
+
+  # ── licensing ─────────────────────────────────────────────────────────────
+  licence:
+    grace:
+      text: >
+        I have not been able to check your licence recently. Everything works
+        normally for another {days} days.
+      vars: [days]
+    expired:
+      text: >
+        I could not confirm your licence. Applying still works — the extra
+        features are paused until I can check again.
+    addon_absent:
+      text: >
+        {feature} is not on your plan. Everything you have already made with it
+        is still here and still readable.
+      vars: [feature]
+    trial_start:
+      text: >
+        For the next week you have everything: interview prep, outreach, career
+        planning and your public page. Nothing to set up, nothing to cancel.
+    trial_end:
+      text: >
+        Your week with everything is over. What you made is still here — you
+        can read all of it, and it comes back exactly as it was if you ever add
+        those features.

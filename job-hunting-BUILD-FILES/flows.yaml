@@ -1,0 +1,672 @@
+# flows.yaml — Flow Catalog
+#
+# Canonical flows through the package, each with the axes that vary it.
+# Deliberately NOT a cartesian product: 36 flows x their axes covers what
+# thousands of enumerated permutations would, and stays readable, testable
+# and demonstrable. A permutation is only listed separately when it changes
+# which skills run or which gates fire — not when it only changes a number.
+#
+# Cross-validated by check_flows.py against graph.json (skills exist),
+# gates.yaml (gate ids exist) and settings.yaml (axis keys exist).
+#
+# FIELD CONTRACT
+#   trigger.type   cron | utterance | handoff | external | install_state
+#   steps          ordered skill ids, exactly as the pipeline runs them
+#   gates          gate ids that can fire in this flow, in order
+#   axes           settings that change the flow's shape, not just a number
+#   variants       named branches worth documenting or demoing separately
+#   demo           true = belongs in the demo script
+#   doc            the worked scenario the documentation uses for this flow
+
+meta:
+  version: 1
+  flows: 38
+  families: 8
+  principle: >
+    Canonical flows times named variation axes, never the cartesian product.
+    Every axis value listed here changes which skills run or which gates fire.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# A — SETUP
+# ═══════════════════════════════════════════════════════════════════════════
+flows:
+
+- id: FLOW-A1
+  name: First install, experienced candidate
+  family: setup
+  trigger: {type: install_state, detail: "a fresh install with nothing set up yet"}
+  preconditions: [approval channel paired, whole job-hunting/ folder installed]
+  steps: [onboarding, 07-context-architect]
+  gates: [GATE-DM-PAIRING, GATE-INSTALL-INTEGRITY, GATE-MEMORY-WRITE, GATE-STAR-WRITE, GATE-FACT-CONFLICT, GATE-TARGET-PROFILE-WRITE]
+  outputs: [target-profile.yaml, USER.md, MEMORY.md, star-story-bank.md, one configured source]
+  next: FLOW-B1
+  axes: [profile_stage]
+  demo: true
+  doc: >
+    Session one, run to completion: pair the approval channel, then Phase 0-4
+    of the career interview, then the handful of settings the pipeline cannot
+    run without. Everything else is spread across the following fortnight.
+
+- id: FLOW-A2
+  name: First install, first-time entrant
+  family: setup
+  trigger: {type: install_state, detail: "ingestion returns empty or education-only"}
+  preconditions: [approval channel paired]
+  steps: [onboarding, 07-context-architect, 20-interests-profile]
+  gates: [GATE-DM-PAIRING, GATE-MEMORY-WRITE, GATE-TARGET-PROFILE-WRITE, GATE-SENSITIVE-DISCLOSURE]
+  outputs: [target-profile.yaml with profile_stage first_time, interests profile, thresholds pre-set 55/35]
+  next: FLOW-B1
+  axes: [profile_stage]
+  demo: true
+  doc: >
+    A genuinely different first session, not a lower bar on the same one.
+    Interests and coursework carry the weight that work history carries
+    elsewhere, and the match thresholds start lower because entry-level
+    postings overstate their own requirements.
+  blocked_by: profile_stage has no field in the shipped template — see settings-registry.md
+
+- id: FLOW-A3
+  name: Paced advanced settings, sessions 2..N
+  family: setup
+  trigger: {type: utterance, detail: "any later session, paced by observed cadence"}
+  steps: [onboarding]
+  gates: [GATE-TARGET-PROFILE-WRITE, GATE-CALIBRATION-CHANGE, GATE-TIER-CONFIG-CHANGE]
+  outputs: [tier-config, further sources, calibration, career-pulse cadences]
+  axes: [active_tier, calibration_mode]
+  demo: false
+  doc: >
+    Spread over one to two weeks, ordered by dependency and payoff. Pitch
+    catalog seeding is deliberately last and gets its own session.
+
+- id: FLOW-A4
+  name: Adding one job source
+  family: setup
+  trigger: {type: utterance, detail: "add this board / watch this company's careers page"}
+  steps: [01-job-discovery]
+  gates: [GATE-TARGET-PROFILE-WRITE]
+  outputs: [new sources.yaml entry with a posted_at method]
+  axes: [discovery_mode]
+  demo: false
+  doc: >
+    Its own micro-flow, run any time, distinct from onboarding the person.
+    The posted_at method matters more than the URL — it is what makes the
+    speed metric honest.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# B — DISCOVERY TO APPLICATION  (the core)
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-B1
+  name: Scheduled discovery to staged application
+  family: core
+  trigger: {type: cron, detail: "discovery every 3h, sweep on its own cadence"}
+  preconditions: [at least one title variant, at least one source, cap not exhausted]
+  steps: [01-job-discovery, 02-jd-parser, 12-company-research, 03-resume-match, 04-keyword-analysis, 05-resume-customizer, 06-cover-letter, 08-application-qa, 09-risk-tactics-gate, 10-approval-and-submit, 11-analytics-and-learning]
+  gates: [GATE-RESEARCH-FETCH, GATE-SITE-SESSION, GATE-SUBMIT-APPLICATION]
+  outputs: [tailored docx, cover letter, answers, change-log, approval message]
+  next: [FLOW-B5, FLOW-D1, FLOW-G1]
+  axes: [fidelity_mode, discovery_mode, active_tier, "match_score.minimum", "match_score.stretch.floor", overqualification_tolerance]
+  variants:
+    - name: strict fidelity
+      effect: unsupported claims stripped, gap written to open_gaps, nothing held for review
+    - name: balanced fidelity
+      effect: claims applied and tagged UNVERIFIED, held for review before the approval message
+    - name: stretch match
+      effect: scores 50-70 staged and tagged STRETCH in the approval message
+    - name: parallel sweep
+      effect: build phase delegated across postings, status flows building to staged to awaiting_approval
+  demo: true
+  doc: >
+    The spine. A posting appears, is parsed, scored, researched, tailored,
+    gated for evidence, and arrives as one message asking approve, edit or
+    skip. Nothing between the posting appearing and that message needs you.
+
+- id: FLOW-B2
+  name: Applying to a posting you found yourself
+  family: core
+  trigger: {type: utterance, detail: "pasted URL or job description"}
+  steps: [02-jd-parser, 12-company-research, 03-resume-match, 04-keyword-analysis, 05-resume-customizer, 06-cover-letter, 08-application-qa, 09-risk-tactics-gate, 10-approval-and-submit]
+  gates: [GATE-RESEARCH-FETCH, GATE-SUBMIT-APPLICATION]
+  outputs: [same package as FLOW-B1]
+  axes: [fidelity_mode]
+  demo: true
+  doc: >
+    The same pipeline entered halfway. Skips discovery and the daily cap
+    entirely — a posting you brought is never rationed.
+
+- id: FLOW-B3
+  name: Score a role without applying
+  family: core
+  trigger: {type: utterance, detail: "how well do I match this"}
+  steps: [02-jd-parser, 03-resume-match]
+  gates: []
+  outputs: [match score, gap list]
+  next: [FLOW-B2, FLOW-E3]
+  axes: ["match_score.minimum"]
+  demo: true
+  doc: >
+    Read-only. Produces a score and the specific gaps behind it, and stops.
+    Often the honest answer to "should I bother with this one."
+
+- id: FLOW-B4
+  name: Edit before approving
+  family: core
+  trigger: {type: utterance, detail: "reply 'edit' to an approval message"}
+  steps: [10-approval-and-submit, 09-risk-tactics-gate, 11-analytics-and-learning]
+  gates: [GATE-SUBMIT-APPLICATION]
+  outputs: [revised package, outcome logged as edited_then_sent]
+  axes: []
+  demo: true
+  doc: >
+    An edit re-enters the evidence gate rather than bypassing it, and the
+    edit itself is logged — the learning loop needs to know which packages
+    needed changing.
+
+- id: FLOW-B5
+  name: Skip or ignore a staged application
+  family: core
+  trigger: {type: utterance, detail: "reply 'skip', or silence"}
+  steps: [10-approval-and-submit, 11-analytics-and-learning]
+  gates: [GATE-SUBMIT-APPLICATION]
+  outputs: [status stays awaiting_approval, decision logged]
+  axes: []
+  demo: false
+  doc: >
+    Silence is never consent. The application sits, and it is counted as a
+    decision you made rather than one the system made for you.
+
+- id: FLOW-B6
+  name: Answering a long application form
+  family: core
+  trigger: {type: handoff, detail: "posting carries free-text questions"}
+  steps: [08-application-qa, 07-context-architect, 09-risk-tactics-gate]
+  gates: [GATE-MEMORY-WRITE]
+  outputs: [drafted answers drawn from the STAR bank]
+  axes: [fidelity_mode]
+  demo: true
+  doc: >
+    Answers are recomposed from confirmed stories. Where no story covers the
+    question, the gap is surfaced rather than invented, and the question
+    joins the bank for next time.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# C — OUTREACH AND PROSPECTING
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-C1
+  name: Reply to a hiring post found on social
+  family: outreach
+  trigger: {type: cron, detail: "social listening scan"}
+  steps: [14-social-discovery-outreach, 22-contact-enrichment, 09-risk-tactics-gate, 10-approval-and-submit]
+  gates: [GATE-SOCIAL-POLL, GATE-SEND-DM, GATE-PUBLIC-REPLY, GATE-PLATFORM-PREREQ]
+  outputs: [drafted reply or DM, tagged by channel]
+  axes: [fidelity_mode, platform_send_tier]
+  variants:
+    - name: tier 1 platform
+      effect: send path exists, message goes out on per-message approval
+    - name: tier 2/3 platform
+      effect: draft only, cued to you to send by hand regardless of approval
+    - name: public reply
+      effect: labelled REPLY, goes up under your name where the whole thread sees it
+  demo: true
+  doc: >
+    A post asking for candidates becomes a drafted response with the post it
+    answers attached. What the tool may do with it depends entirely on the
+    platform, read live from the capability matrix rather than assumed.
+
+- id: FLOW-C2
+  name: Cold pitch to a company with no opening
+  family: outreach
+  trigger: {type: utterance, detail: "reach out to X, or the prospecting cadence cron"}
+  steps: [17-cold-prospecting, 12-company-research, 22-contact-enrichment, 09-risk-tactics-gate, 10-approval-and-submit]
+  gates: [GATE-RESEARCH-FETCH, GATE-ENRICHMENT-LOOKUP, GATE-PAID-SPEND, GATE-SEND-EMAIL]
+  outputs: [pitch drawn from the catalog, evidence-traced]
+  axes: []
+  variants:
+    - name: role_fit
+      effect: '"I could do X for you" — familiar, low friction, the default volume'
+    - name: role_creation
+      effect: asks them to accept a diagnosis of their own business first — deliberately a small minority of weekly volume
+    - name: wildcard entry used
+      effect: WILDCARD tag carried through to the approval message so approval is never given on autopilot
+  demo: true
+  doc: >
+    Every claim about their situation traces to a line in that company's own
+    research record, and is framed as a hypothesis rather than an assertion.
+
+- id: FLOW-C3
+  name: Finding a real person behind a company name
+  family: outreach
+  trigger: {type: handoff, detail: "company and role known, name and email are not"}
+  steps: [22-contact-enrichment]
+  gates: [GATE-ENRICHMENT-LOOKUP, GATE-PAID-SPEND, GATE-API-KEY-CONNECT]
+  outputs: [identified person with confidence score and cited evidence, verified email]
+  axes: [tier3_monthly_budget_usd]
+  variants:
+    - name: free cascade only
+      effect: public sources, self-hosted tools, then rotated free tiers — 325+ lookups a month at zero cost
+    - name: paid tier reached
+      effect: asks, with the price, and only if a budget above zero was set
+  demo: true
+  doc: >
+    Hiring manager first, recruiter-track staged separately and framed
+    differently. Neither is ever asserted with certainty — the output is a
+    confidence-scored hypothesis with its sources attached.
+
+- id: FLOW-C4
+  name: LinkedIn stranger, connect then message
+  family: outreach
+  trigger: {type: handoff, detail: "target identified on LinkedIn, no existing connection"}
+  steps: [14-social-discovery-outreach]
+  gates: [GATE-LINKEDIN-CONNECT, GATE-PLATFORM-PREREQ, GATE-SEND-DM]
+  outputs: [connection request with note, then a message once accepted]
+  axes: [platform_send_tier]
+  demo: true
+  doc: >
+    Two gates in sequence, and the second cannot fire until the platform
+    prerequisite clears. A drafted message sits below sendable until the
+    connection is actually accepted, no matter how ready it is.
+
+- id: FLOW-C5
+  name: InMail instead of connect-and-wait
+  family: outreach
+  trigger: {type: utterance, detail: "target worth a metered credit"}
+  steps: [14-social-discovery-outreach]
+  gates: [GATE-SEND-INMAIL]
+  outputs: [one InMail, credit decremented]
+  axes: [plan, platform_send_tier]
+  demo: false
+  doc: >
+    Buys skipping the wait, at the cost of a plan-gated credit. One per
+    recipient — no follow-up without a reply. Unavailable until your
+    subscription tier is set, which is the honest default rather than an error.
+
+- id: FLOW-C6
+  name: Seeding the pitch catalog
+  family: outreach
+  trigger: {type: utterance, detail: "its own dedicated session, never folded into general setup"}
+  steps: [17-cold-prospecting, 07-context-architect]
+  gates: [GATE-PITCH-CONFIRM, GATE-PITCH-WILDCARD]
+  outputs: [catalog entries with evidence and target personas]
+  axes: []
+  demo: false
+  doc: >
+    A genuinely creative pass, not a checkbox. Stretch entries get a visibly
+    heavier confirmation than held ones — an explicit "you are telling me you
+    can actually deliver this."
+
+# ═══════════════════════════════════════════════════════════════════════════
+# D — INTERVIEW AND OFFER
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-D1
+  name: Interview invite to prep brief
+  family: interview
+  trigger: {type: external, detail: "interview_request_at set, by email scan or by you"}
+  steps: [11-analytics-and-learning, 13-interview-prep, 12-company-research]
+  gates: [GATE-INBOX-SCAN, GATE-RESEARCH-FETCH, GATE-CALENDAR-CREATE]
+  outputs: [prep brief, flashcard deck, interviewer research, optional calendar block]
+  next: [FLOW-D2, FLOW-D3]
+  axes: []
+  demo: true
+  doc: >
+    Fires on the invite arriving, not on you remembering to ask. Where three
+    likely questions have no story on file, the brief says exactly that
+    rather than filling the space.
+
+- id: FLOW-D2
+  name: Live practice session
+  family: interview
+  trigger: {type: utterance, detail: "'quiz me' / 'practise for Thursday'"}
+  steps: [13-interview-prep]
+  gates: []
+  outputs: [practice run with feedback against your own stories]
+  axes: []
+  demo: true
+  doc: >
+    The study phase, separate from the build phase. Runs on the deck already
+    built, and works by voice as readily as by text.
+
+- id: FLOW-D3
+  name: Later round or a changed format
+  family: interview
+  trigger: {type: external, detail: "a later round's details arriving by email"}
+  steps: [13-interview-prep, 11-analytics-and-learning]
+  gates: [GATE-INBOX-SCAN]
+  outputs: [updated brief for the new format and panel]
+  axes: []
+  demo: false
+  doc: >
+    A second round is a different interview, not the same one again — panel,
+    format and depth all move.
+
+- id: FLOW-D4
+  name: Offer comparison and decision
+  family: interview
+  trigger: {type: external, detail: "an offer arrives"}
+  steps: [10-approval-and-submit, 11-analytics-and-learning]
+  gates: []
+  outputs: [comparison workbook, outcome logged]
+  axes: []
+  demo: true
+  doc: >
+    The other end of the pipeline and the higher-stakes decision. Built as a
+    workbook you can change the assumptions in, not as prose that argues for
+    an answer.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# E — CAREER DIRECTION
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-E1
+  name: Plan a path to a target role
+  family: direction
+  trigger: {type: utterance, detail: "what would it take to become a X"}
+  steps: [19-career-path-planner, 07-context-architect, 12-company-research]
+  gates: [GATE-TARGET-PROFILE-WRITE, GATE-RESEARCH-FETCH]
+  outputs: [confirmed target title, stepping-stone plan, gap list]
+  next: FLOW-B1
+  axes: ["stepping_stone.max_hops", "stepping_stone.allow_comp_regression", "stepping_stone.liquidity_probe"]
+  variants:
+    - name: allow_comp_regression ask
+      effect: steps that pay less are shown with the reasoning
+    - name: allow_comp_regression never
+      effect: silently removes most sector switches and management-track entries
+    - name: liquidity probe off
+      effect: taxonomy signals only — a plan can point at a title with no live market
+  demo: true
+  doc: >
+    Ends in one confirmed target, which then becomes what the whole discovery
+    pipeline runs against. Two hops maximum; a third rests on a profile
+    nobody can predict.
+
+- id: FLOW-E2
+  name: Build or refresh the interests profile
+  family: direction
+  trigger: {type: utterance, detail: "setup, or something interest-shaped mentioned in passing"}
+  steps: [20-interests-profile, 07-context-architect]
+  gates: [GATE-MEMORY-WRITE, GATE-SENSITIVE-DISCLOSURE]
+  outputs: [interests profile with sensitive entries tagged]
+  axes: []
+  demo: false
+  doc: >
+    Recording is free and unrestricted. Whether a sensitive entry ever
+    appears in an outward document is a separate decision, asked at the
+    moment of use, every time.
+
+- id: FLOW-E3
+  name: Career pulse journal check-in
+  family: direction
+  trigger: {type: cron, detail: "journal cadence"}
+  steps: [16-career-pulse, 07-context-architect]
+  gates: [GATE-MEMORY-WRITE, GATE-VOICE-NUMBER-ECHO, GATE-FACT-CONFLICT]
+  outputs: [journal entry stored raw, candidate facts routed to confirmation]
+  axes: []
+  demo: true
+  doc: >
+    Raw entries are stored immediately; anything that looks like a durable
+    career fact goes through confirmation before it reaches memory. A
+    quantified claim heard in a voice note is read back before it is written.
+
+- id: FLOW-E4
+  name: Profile monitor picks up a change
+  family: direction
+  trigger: {type: cron, detail: "explicit-channel monitor cadence"}
+  steps: [16-career-pulse, 07-context-architect]
+  gates: [GATE-SITE-SESSION, GATE-MEMORY-WRITE]
+  outputs: [diff surfaced, candidate fact routed to confirmation]
+  axes: []
+  demo: false
+  doc: >
+    Watches the profiles you named. Surfaces, never writes — every candidate
+    fact goes through the same confirmation as one you mentioned yourself.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# F — ASSETS AND PRESENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-F1
+  name: Build and publish a portfolio page
+  family: assets
+  trigger: {type: utterance, detail: "a role asks for a portfolio, or you want a link"}
+  steps: [23-portfolio-onepager, 09-risk-tactics-gate]
+  gates: [GATE-PORTFOLIO-PUBLISH]
+  outputs: [one page from confirmed memory, optionally at a public URL]
+  axes: []
+  demo: true
+  doc: >
+    Six blocks, every one drawn from already-confirmed memory. Built locally
+    first — going public is its own decision, made after you have looked at it.
+
+- id: FLOW-F2
+  name: LinkedIn profile audit and rewrite
+  family: assets
+  trigger: {type: utterance, detail: "audit my LinkedIn"}
+  steps: [24-linkedin-profile-optimizer, 09-risk-tactics-gate]
+  gates: [GATE-PROFILE-EDIT]
+  outputs: [proposed changes, one at a time, against current text]
+  axes: [fidelity_mode]
+  demo: true
+  doc: >
+    Every proposed line traces to the same confirmed material a resume draws
+    on. Approval is per change, because your network sees the edit activity.
+
+- id: FLOW-F3
+  name: Save a named output template
+  family: assets
+  trigger: {type: utterance, detail: "always write cover letters for X like this"}
+  steps: [21-output-templates]
+  gates: [GATE-OUTPUT-TEMPLATE-WRITE]
+  outputs: [named template applied to future outputs of that type]
+  axes: []
+  demo: false
+  doc: >
+    The one confirmed-write file that does not route through the memory
+    skill, deliberately — a formatting preference is not a career fact.
+
+- id: FLOW-F4
+  name: Share an outcome milestone
+  family: assets
+  trigger: {type: external, detail: "response rate crosses 2x your stated baseline over 10+ applications"}
+  steps: [11-analytics-and-learning]
+  gates: [GATE-TESTIMONIAL-POST]
+  outputs: [drafted post in your own voice, every figure traced to a row]
+  axes: []
+  demo: true
+  doc: >
+    Triggered on a personal multiple, not an absolute number, so it means
+    something regardless of your field. Capped at one ask a fortnight and
+    suppressed entirely after two you ignore.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# G — LEARNING AND MAINTENANCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-G1
+  name: Weekly self-improvement review
+  family: learning
+  trigger: {type: cron, detail: "Monday morning"}
+  steps: [11-analytics-and-learning]
+  gates: [GATE-SKILL-EDIT]
+  outputs: [eight correlation results, staged edit proposals, weekly digest]
+  axes: [calibration_mode]
+  variants:
+    - name: rotation group released
+      effect: only this week's group of proposals surfaces, the rest wait with their detection date recorded
+    - name: effect size grew
+      effect: a queued proposal is promoted to the next release regardless of its group
+  demo: true
+  doc: >
+    Correlates your tactics against your real outcomes and proposes specific,
+    evidence-backed edits — with the numbers behind each one. Two proposals a
+    week, not eight, because a review that surfaces eight teaches you to
+    approve all of them without reading.
+
+- id: FLOW-G2
+  name: Quarterly optimiser run
+  family: learning
+  trigger: {type: utterance, detail: "manual, quarterly, never scheduled"}
+  steps: [11-analytics-and-learning]
+  gates: [GATE-GEPA-DEPLOY]
+  outputs: [evolved and baseline files to diff by hand]
+  axes: []
+  demo: false
+  doc: >
+    Deliberately manual and deliberately scoped to the three writing skills.
+    The risk gate is excluded — an optimiser whose constraint checks cannot
+    see content is the wrong tool to point at the one skill whose value is
+    being conservative.
+
+- id: FLOW-G3
+  name: Ghost check and outcome nudge
+  family: learning
+  trigger: {type: cron, detail: "daily"}
+  steps: [11-analytics-and-learning]
+  gates: [GATE-INBOX-SCAN]
+  outputs: [outcomes logged from email, a short ask about the genuinely untrackable remainder]
+  axes: []
+  demo: false
+  doc: >
+    Scans for outcomes first so the daily ask is scoped to what has no email
+    trace at all — a verbal offer from a call, or real silence.
+
+- id: FLOW-G4
+  name: Pause and resume the search
+  family: learning
+  trigger: {type: utterance, detail: "pause for two weeks"}
+  steps: [00-orchestrator]
+  gates: [GATE-PIPELINE-PAUSE]
+  outputs: [discovery stopped with a visible expiry]
+  axes: []
+  demo: true
+  doc: >
+    Discovery stops. Conversation does not, and the journal keeps running —
+    a pause is about the searching, not about you disappearing.
+
+- id: FLOW-G5
+  name: Adding a new capability
+  family: learning
+  trigger: {type: utterance, detail: "can it also do X"}
+  steps: [18-skill-composer]
+  gates: [GATE-SKILL-COMPOSER-WRITE]
+  outputs: [drafted addendum, reviewed before install]
+  axes: []
+  demo: false
+  doc: >
+    Defaults to writing an addendum rather than rewriting a working file, so
+    hand-tuned behaviour is never silently replaced.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# H — FAILURE AND RECOVERY   (the flows nobody documents and everybody hits)
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: FLOW-H1
+  name: The posting disappeared before approval
+  family: failure
+  trigger: {type: external, detail: "re-verification before the approval message"}
+  steps: [10-approval-and-submit, 11-analytics-and-learning]
+  gates: []
+  outputs: [dropped from the queue, reported in the digest not as a ping]
+  axes: []
+  demo: true
+  doc: >
+    Three signals, and the third catches most real cases: a 404, a page that
+    now says closed, and a redirect to the board index where the fetch
+    succeeds and only the content tells you. A pulled posting is information,
+    not a decision — and it must not count as a non-reply, or every response
+    rate you measure is understated.
+
+- id: FLOW-H2
+  name: The evidence gate refuses a claim
+  family: failure
+  trigger: {type: handoff, detail: "a tactic with no supporting line in memory"}
+  steps: [09-risk-tactics-gate, 07-context-architect]
+  gates: [GATE-FIDELITY-MODE]
+  outputs: [tactic dropped or flagged by mode, gap written to open_gaps]
+  next: FLOW-E3
+  axes: [fidelity_mode]
+  demo: true
+  doc: >
+    The gap goes to a worklist, never into memory as an invented fact. The
+    memory interview picks it up on its next run, which is how a refused
+    claim becomes a real story rather than a permanent blocker.
+
+- id: FLOW-H3
+  name: Submit blocked by the safety hook
+  family: failure
+  trigger: {type: external, detail: "a submit-shaped click with no approval recorded"}
+  steps: [10-approval-and-submit]
+  gates: [GATE-SUBMIT-APPLICATION, GATE-DANGEROUS-COMMAND]
+  outputs: [blocked, with the specific reason]
+  axes: []
+  demo: true
+  doc: >
+    The hook trusts the recorded decision, never the conversation. It fails
+    closed on every branch it can see — and fails open, silently, on any tool
+    name it was never told about, which is why the form is not opened at all
+    until the toolset is confirmed watched.
+
+- id: FLOW-H4
+  name: Partial install
+  family: failure
+  trigger: {type: install_state, detail: "an incomplete install"}
+  steps: [00-orchestrator]
+  gates: [GATE-INSTALL-INTEGRITY]
+  outputs: [stop, with the missing file named]
+  axes: []
+  demo: false
+  doc: >
+    The worst failure available here is not a crash. It is a skill that reads
+    convincingly with no rules, no database and no profile behind it — which
+    is why this is checked at first run of every session.
+
+- id: FLOW-H5
+  name: Restore from backup
+  family: failure
+  trigger: {type: utterance, detail: "data loss or a bad migration"}
+  steps: [00-orchestrator]
+  gates: [GATE-BACKUP-RESTORE]
+  outputs: [state restored from a named date]
+  axes: []
+  demo: false
+  doc: >
+    States what will be overwritten and from when, before it runs. Backups
+    themselves are unattended and need no gate; restores are not and do.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Variation axes — the settings that change flow shape, not just a number
+# ═══════════════════════════════════════════════════════════════════════════
+axes:
+  fidelity_mode:
+    values: [strict, balanced, embellish]
+    affects: [FLOW-B1, FLOW-B2, FLOW-B6, FLOW-C1, FLOW-F2, FLOW-H2]
+    changes: whether an unsupported claim is stripped, held for review, or logged and passed
+  profile_stage:
+    values: [experienced, first_time]
+    affects: [FLOW-A1, FLOW-A2]
+    changes: which first session runs at all, and the starting match thresholds
+  discovery_mode:
+    values: [poll_only, open_web, open_web_excluding]
+    affects: [FLOW-B1, FLOW-A4]
+    changes: whether the open-web sweep runs as a second, slower cadence
+  calibration_mode:
+    values: [manual, auto, hybrid]
+    affects: [FLOW-A3, FLOW-G1]
+    changes: whether threshold changes are staged for approval or applied directly
+  active_tier:
+    values: [starter, pro, max]
+    affects: [FLOW-B1, FLOW-A3]
+    changes: how many packages reach your queue per day
+  overqualification_tolerance:
+    values: [strict, balanced, relaxed]
+    affects: [FLOW-B1]
+    changes: whether roles below your level are staged at all
+  stepping_stone.allow_comp_regression:
+    values: [ask, never, allow]
+    affects: [FLOW-E1]
+    changes: whether sector switches and management-track entries appear in a plan
+  platform_send_tier:
+    values: [tier_1, tier_2, tier_3]
+    affects: [FLOW-C1, FLOW-C4, FLOW-C5]
+    changes: whether the tool may send at all, or only draft and cue
+    note: not a setting — read live from the capability matrix, per Rule 6

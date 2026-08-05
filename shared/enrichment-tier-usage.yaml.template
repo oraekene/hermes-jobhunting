@@ -1,0 +1,73 @@
+# shared/enrichment-tier-usage.yaml — auto-updated by 22-contact-
+# enrichment, not a confirm-gated preference file the way most of this
+# package's config is (see that skill's Part B Tier 2). Resets per
+# provider on that provider's own billing-cycle date — check each
+# provider's actual reset date rather than assuming the 1st of the
+# calendar month.
+#
+# Materialized as its own file rather than left only as an inline
+# example in 22-contact-enrichment/references/free-tier-rotation.md — described-but-not-
+# shipped config files were caught as a real gap in an earlier audit
+# pass of this package; not repeating that here.
+
+providers:
+  - name: "hunter"
+    monthly_allowance: 50
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "snov"
+    monthly_allowance: 50
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "getprospect"
+    monthly_allowance: 50
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "getprospect_verify"
+    monthly_allowance: 100
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "prospeo"
+    monthly_allowance: 75
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "skrapp"
+    monthly_allowance: 100
+    used_this_cycle: 0
+    cycle_resets_at: null
+    rollover_eligible: true
+  - name: "apollo"
+    monthly_allowance: null   # set once the real account allowance is
+                                # confirmed — see enrichment-tools-
+                                # pricing.md's note on why this isn't
+                                # assumed from a comparison article
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "parallel_cli"
+    monthly_allowance: null   # Hermes-official optional skill
+                                # (research/parallel-cli) — has a free
+                                # tier, exact monthly figure not
+                                # independently confirmed; set once known
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "zerobounce"        # verification-tier tracking, same file,
+                                # separate entries — Part B's mandatory
+                                # verification pass draws from these too
+    monthly_allowance: 100
+    used_this_cycle: 0
+    cycle_resets_at: null
+  - name: "kickbox"
+    monthly_allowance: 100
+    used_this_cycle: 0
+    cycle_resets_at: null
+
+# Tier 3 (paid, last-resort) budget — see 22-contact-enrichment/
+# SKILL.md's Part B. Zero by default: Tier 3 spend is opt-in, never
+# assumed. Raising this requires Kene's explicit confirmation, same as
+# any other confirmed pipeline-behavior setting (Rule 11's spirit,
+# applied to spend rather than templates).
+tier3_monthly_budget_usd: 0
+tier3_spent_this_cycle_usd: 0
+tier3_cycle_resets_at: null
+
+last_updated_at: null

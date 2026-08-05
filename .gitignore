@@ -1,0 +1,7 @@
+dist/
+__pycache__/
+*.pyc
+.env
+*.bak
+node_modules/
+.scratch/

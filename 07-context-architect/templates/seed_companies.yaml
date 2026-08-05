@@ -1,0 +1,59 @@
+# Copy to seed_companies.yaml and expand. This is a deliberately small,
+# deliberately varied starting set — the point of this file is the tag
+# spread, not its length. Add companies as you find their public boards:
+# a Greenhouse company's slug is the path segment in
+# boards.greenhouse.io/<slug>; a Lever company's is jobs.lever.co/<slug>.
+#
+# Keep the tag lists honest — tag by what the ROLE actually is, not by
+# what Kene would apply for. This bank has to generalize across the
+# full diversity matrix, not just his own target roles (those are
+# already covered by shared/target-profile.yaml and 01-job-discovery).
+
+companies:
+  - slug: stripe
+    platform: greenhouse
+    industry_tags: [fintech]
+    seniority_tags: [ic_mid, ic_senior]
+    function_tags: [engineering, product]
+    geo_tags: [us]
+
+  - slug: doximity
+    platform: greenhouse
+    industry_tags: [healthcare]
+    seniority_tags: [ic_mid]
+    function_tags: [engineering]
+    geo_tags: [us]
+
+  - slug: netflix
+    platform: lever
+    industry_tags: [media]
+    seniority_tags: [ic_senior, manager]
+    function_tags: [engineering, marketing]
+    geo_tags: [us]
+
+  - slug: andela
+    platform: greenhouse
+    industry_tags: [tech, staffing]
+    seniority_tags: [ic_mid, ic_senior]
+    function_tags: [engineering]
+    geo_tags: [nigeria, africa, remote]
+
+  - slug: flutterwave
+    platform: lever
+    industry_tags: [fintech]
+    seniority_tags: [ic_mid, manager]
+    function_tags: [engineering, product, operations]
+    geo_tags: [nigeria, africa]
+
+  - slug: paystack
+    platform: greenhouse
+    industry_tags: [fintech]
+    seniority_tags: [entry, ic_mid]
+    function_tags: [engineering, customer_support]
+    geo_tags: [nigeria, africa]
+
+  # ... keep adding across the matrix in question-bank-pipeline.md:
+  # manufacturing, education, nonprofit, government, hospitality,
+  # logistics, energy — and director+/entry-level seniority bands,
+  # which are systematically under-sampled if you only add companies
+  # you personally recognize.

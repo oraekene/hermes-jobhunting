@@ -1,0 +1,270 @@
+# onboarding.yaml — the setup sequence
+#
+# Sequences every setting and permission pack into paced sessions. Validated by
+# check_onboarding.py: every SIMPLE setting appears in session 1, every setting
+# in the registry appears exactly once somewhere, and nothing is asked before
+# the thing it depends on.
+#
+# THE PACING PRINCIPLE. Session 1 asks only what the pipeline cannot run
+# without — seven settings. Everything else is spread across the following
+# fortnight, triggered by the user reaching the situation the setting is about.
+# A setup wizard that asks 22 questions before showing any value gets abandoned
+# somewhere around question nine, and the abandonment is silent.
+#
+# THE ORDERING PRINCIPLE. Ask in dependency order, and ask the cheap
+# high-information questions first. profile_stage is first because it changes
+# what every later question means.
+
+meta:
+  version: 1
+  session_1_target_minutes: 25
+  total_settings: 22
+  simple_in_session_1: 7
+
+sessions:
+
+- id: SESSION-1
+  name: Enough to run
+  when: first install
+  target_minutes: 25
+  flow: FLOW-A1        # or FLOW-A2 if profile_stage is first_time
+  goal: >
+    End the session with a real application staged and waiting for approval.
+    Not a configured tool — an actual result. That is the difference between a
+    setup someone finishes and one they abandon.
+  steps:
+
+  - id: S1-01
+    kind: pairing
+    gate: GATE-DM-PAIRING
+    prompt: Pair the approval channel.
+    why_first: >
+      Nothing else in the package means anything until approvals can only come
+      from you. This is also where a multi-customer deployment gets its
+      per-customer identity — one pairing code per customer, never a shared
+      channel.
+    blocking: true
+
+  - id: S1-02
+    kind: check
+    gate: GATE-INSTALL-INTEGRITY
+    prompt: Verify the install is complete.
+    why: >
+      The worst failure here is not a crash. It is a skill that reads
+      convincingly with no rules, no database and no profile behind it. Also
+      reports which protections are active — a container backend silently
+      disables one of the three submit-approval layers.
+    blocking: true
+
+  - id: S1-03
+    setting: profile_stage
+    kind: ask
+    prompt: Do you have prior paid work history to draw on?
+    why_first: >
+      It changes what every later question means and pre-sets the match
+      thresholds. Asking it fourth would mean re-asking three earlier answers.
+    routes_to: {first_time: FLOW-A2, experienced: FLOW-A1}
+
+  - id: S1-04
+    kind: ingest
+    prompt: Hand over a resume, a LinkedIn export, or just talk.
+    why: >
+      Most of the profile can be inferred and then confirmed, which is far
+      faster than being interviewed for it. Everything inferred is read back
+      before it is stored.
+    gate: GATE-MEMORY-WRITE
+    fallback: >
+      With nothing to ingest, the interview covers the same ground
+      conversationally. This is the normal path for first_time.
+
+  - id: S1-05
+    setting: seniority_band
+    kind: confirm
+    prompt: Confirm your level.
+    prefilled_from: S1-04
+
+  - id: S1-06
+    setting: title_variants
+    kind: confirm
+    prompt: Confirm the job titles worth searching for.
+    prefilled_from: S1-04
+    why: >
+      Discovery returns literally nothing until at least one exists, so this is
+      the single most load-bearing answer in the session.
+
+  - id: S1-07
+    setting: locations
+    kind: ask
+    prompt: Where will you work — remote, hybrid, onsite, and where?
+
+  - id: S1-08
+    setting: salary_floor
+    kind: ask
+    prompt: Is there a figure below which you would not take a role?
+    note: >
+      "No floor yet" is a real, working answer and must be offered explicitly.
+      Asking a question that has no acceptable non-answer teaches people to
+      make something up.
+
+  - id: S1-09
+    kind: stories
+    gate: GATE-STAR-WRITE
+    prompt: Three things you have done that you would want to be asked about.
+    why: >
+      Three is enough to produce a first application and few enough to finish in
+      one sitting. The bank grows on its own from journal entries and from gaps
+      the evidence gate finds.
+
+  - id: S1-10
+    setting: fidelity_mode
+    kind: ask
+    gate: GATE-FIDELITY-MODE
+    prompt: How strictly must claims be backed by evidence?
+    default: strict
+    why_here: >
+      Asked immediately after the story bank, while it is concrete what
+      "evidence" refers to. Asked in the abstract it gets an abstract answer.
+
+  - id: S1-11
+    setting: discovery_mode
+    kind: ask
+    prompt: Search only the boards you name, or the wider web too?
+    default: poll_only
+
+  - id: S1-12
+    kind: source
+    prompt: Add one job source.
+    why: >
+      One, not five. A user who adds one working source and sees a result comes
+      back and adds four more. A user asked for five up front adds none.
+
+  - id: S1-13
+    kind: run
+    flow: FLOW-B1
+    prompt: Run discovery once, live, and stage the first application.
+    why: >
+      Ending on a staged application rather than a configuration summary is the
+      whole point of the session. It also demonstrates the submit gate on real
+      output, which is a better explanation of it than any tooltip.
+
+- id: SESSION-2
+  name: Volume and bar
+  when: 2-4 days after session 1, once some applications have been reviewed
+  target_minutes: 10
+  trigger: first approval decision made
+  steps:
+  - {id: S2-01, setting: active_tier, kind: ask,
+     prompt: "How many applications a day should be prepared for you?",
+     why: "Meaningless before they have seen what reviewing one costs them."}
+  - {id: S2-02, setting: employment_status, kind: ask,
+     prompt: "Are you currently working?"}
+  - {id: S2-03, setting: "match_score.minimum", kind: ask,
+     prompt: "Where should the bar sit?", prefilled_from: profile_stage}
+  - {id: S2-04, setting: "match_score.stretch.floor", kind: ask,
+     prompt: "Should reaches be staged too, flagged as reaches?"}
+  - {id: S2-05, setting: overqualification_tolerance, kind: ask,
+     prompt: "How far below your level is worth considering?"}
+  - {id: S2-06, setting: calibration_mode, kind: ask,
+     prompt: "May the bar adjust itself as results come in?", default: hybrid}
+
+- id: SESSION-3
+  name: Filters and edges
+  when: week 2, or the first time a bad match appears
+  target_minutes: 8
+  trigger: user skips three applications for the same reason
+  steps:
+  - {id: S3-01, setting: visa_sponsorship_required, kind: ask,
+     prompt: "Do you need sponsorship?"}
+  - {id: S3-02, setting: companies_exclude, kind: ask,
+     prompt: "Anywhere that should never appear — your current employer, say?"}
+  - {id: S3-03, setting: industries_exclude, kind: ask,
+     prompt: "Any industries to rule out?"}
+  - {id: S3-04, setting: exclude_domains, kind: ask,
+     prompt: "Aggregator sites cluttering the queue?", only_if: "discovery_mode != poll_only"}
+
+- id: SESSION-4
+  name: Permission packs
+  when: week 2, prompted by friction rather than scheduled
+  target_minutes: 10
+  trigger: user approves 15+ applications without editing any
+  goal: >
+    Deliberately triggered by evidence of friction, not by the calendar. Someone
+    who has approved fifteen packages unchanged has earned the offer; someone
+    still editing every one has not, and offering it to them is offering to
+    remove a check they are visibly still using.
+  steps:
+  - {id: S4-01, kind: packs, prompt: "Review the permission packs."}
+  - {id: S4-02, kind: batch, prompt: "Offer batch review — approve five at once."
+     , why: "The right answer for most people. Captures nearly all the friction
+       reduction of auto-approve while keeping a human on every application."}
+  - {id: S4-03, kind: arm, prompt: "Only if asked — arm an irreversible gate."
+     , gate_class: irreversible_external
+     , requires: [typed confirmation, own screen, 30-day expiry, cap still applies]}
+
+- id: SESSION-5
+  name: Addon capabilities
+  when: week 3, or on first use of a licensed addon
+  target_minutes: 12
+  trigger: addon licensed, or trial begins
+  steps:
+  - {id: S5-01, setting: plan, kind: ask, capability: social_listening,
+     prompt: "Your LinkedIn subscription tier?",
+     note: "Unset is honest, not an error — every stranger routes through
+       connect-and-wait instead."}
+  - {id: S5-02, setting: tier3_monthly_budget_usd, kind: ask,
+     capability: contact_enrichment, default: 0,
+     prompt: "A monthly budget for paid contact lookups?",
+     note: "Zero is the default and covers 325+ free lookups a month."}
+  - {id: S5-03, setting: "stepping_stone.max_hops", kind: ask,
+     capability: career_planning, prompt: "How many moves may a plan span?"}
+  - {id: S5-04, setting: "stepping_stone.allow_comp_regression", kind: ask,
+     capability: career_planning,
+     prompt: "May a plan include a step that pays less?", default: ask}
+  - {id: S5-05, setting: "stepping_stone.liquidity_probe", kind: ask,
+     capability: career_planning,
+     prompt: "Check live demand for a planned role?", default: true}
+
+- id: SESSION-6
+  name: Pitch catalog
+  when: its own session, never folded into another
+  target_minutes: 30
+  capability: cold_outreach
+  trigger: user asks about outreach, or the outreach addon is licensed
+  goal: >
+    A genuinely creative pass rather than a form. Held capabilities first,
+    adjacent second, stretch entries last and with a visibly heavier
+    confirmation — an explicit "you are telling me you can actually deliver
+    this", because every pitch drawing on one carries that tag through to the
+    approval message.
+  steps:
+  - {id: S6-01, kind: catalog, gate: GATE-PITCH-CONFIRM,
+     prompt: "What can you deliver, with the evidence for each?"}
+  - {id: S6-02, kind: catalog, gate: GATE-PITCH-WILDCARD,
+     prompt: "Anything you could deliver but have not yet?"}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Baseline capture — asked in session 1, used forever
+# ─────────────────────────────────────────────────────────────────────────────
+baseline:
+  when: SESSION-1, immediately after S1-08
+  why: >
+    Without this there is no before-and-after, and the before-and-after is the
+    most persuasive thing the tool will ever be able to say about itself. It is
+    also what makes milestone thresholds personal rather than absolute: "twice
+    your own baseline" means something in every field, "12% response rate" does
+    not.
+  questions:
+  - {id: B-01, key: baseline_applications_6mo, prompt: "Roughly how many applications in the last six months?"}
+  - {id: B-02, key: baseline_replies, prompt: "Roughly how many replies of any kind?"}
+  - {id: B-03, key: baseline_interviews, prompt: "How many interview invitations?"}
+  - {id: B-04, key: baseline_interviews_went_well, prompt: "Of those, how many felt like they went well?",
+     type: subjective,
+     note: "A self-assessment, so it is stored as a scale rather than a count and
+       never appears in a published figure. Excellent for the private
+       before-and-after, bad as a public statistic."}
+  - {id: B-05, key: baseline_offers, prompt: "Any offers?"}
+  skippable: true
+  skip_consequence: >
+    Fine to skip, and the consequence is stated plainly rather than hidden:
+    milestone triggers fall back to fleet percentiles, which are weaker and
+    arrive later.

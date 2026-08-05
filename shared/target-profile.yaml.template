@@ -1,0 +1,114 @@
+# shared/target-profile.yaml — structured, machine-readable target profile.
+#
+# This is NOT a replacement for ~/.hermes/memories/USER.md. USER.md stays
+# the ~500-token prose summary every pipeline run needs in context. This
+# file is what those prose facts get expanded into once confirmed — the
+# exact-match data 01-job-discovery's cheap filter and any per-source
+# query-builder actually read. Both files are owned by 07-context-architect
+# (Rule 5, shared/pipeline-rules.md) and are written together, from the
+# same confirmed interview — never hand-edit this file directly; if a
+# field is wrong, re-run the context-architect interview so the correction
+# goes through confirmation, same as any other memory fact.
+
+# Asked first at onboarding — it routes the whole first session and pre-sets
+# the match thresholds in dynamic-target-calibration.yaml. Confirmed the same
+# way as every other field here; never hand-edited.
+#   experienced - prior paid work history to draw on
+#   first_time  - entering the workforce, or switching with no prior history
+#                 in the target field. Pre-sets minimum 55 / stretch floor 35.
+profile_stage: ""
+
+seniority_band: ""   # e.g. "mid", "senior", "mid-to-senior"
+
+locations:
+  remote_ok: null      # true | false
+  hybrid_ok: null
+  onsite_ok: null
+  countries: []        # e.g. ["United Kingdom", "Worldwide"]
+  cities: []
+
+salary_floor:
+  amount: null
+  currency: ""
+  period: "year"       # year | month | day | hour
+
+visa_sponsorship_required: null   # true | false | null = not yet confirmed
+
+industries_exclude: []
+companies_exclude: []
+
+# How strict 09-risk-tactics-gate is about requiring evidence before
+# applying a claim-changing tactic (exact-phrase mirroring, CV title
+# matching, added "transferable" skills, values-alignment claims).
+# See shared/pipeline-rules.md Rule 2 and 09-risk-tactics-gate/SKILL.md's
+# "Fidelity mode" section for exactly what each value does.
+#   strict     - (default) unsupported claims are stripped/weakened, gap logged
+#   balanced   - unsupported claims still applied, flagged [UNVERIFIED] and
+#                held for review before 10-approval-and-submit shows the
+#                package to Kene
+#   embellish  - unsupported claims applied and logged [UNVERIFIED] for the
+#                audit trail, but not held up as a separate approval-time flag
+# Confirmed the same way as every other field here — never hand-edit.
+fidelity_mode: "strict"
+
+# How 01-job-discovery finds postings. See shared/sources.yaml's own
+# top-level discovery_mode setting for the full explanation — this is
+# the confirmed value that file reads; don't maintain two copies of it,
+# this is the source of truth, sources.yaml just consumes it.
+#   poll_only            - (default) only the sources declared in sources.yaml
+#   open_web              - poll_only PLUS a broader open web search/browse
+#                           sweep on its own slower cadence (see
+#                           sources.yaml's open_web_search source type)
+#   open_web_excluding    - same as open_web, minus domains listed in
+#                           sources.yaml's exclude_domains
+discovery_mode: "poll_only"
+
+# Title variants used by 01-job-discovery's cheap filter. Each entry is an
+# object, not a bare string, so provenance survives — Phase 0's "adjacent
+# title expansion" sub-step (07-context-architect/references/title-taxonomy.md)
+# proposes entries with source: taxonomy_suggested; only source: held or
+# source: applied are auto-suggested from resume/application history.
+# Whatever the source, nothing here is written without Kene confirming it
+# (same Phase 0 discipline as every other field on this page). Only the
+# `title` string is what 01-job-discovery actually matches against —
+# source/confidence/rationale are for your own audit trail, not consumed
+# by the filter.
+title_variants: []
+  # - title: ""                        # e.g. "Product Manager"
+  #   source: "held"                   # held | applied | taxonomy_suggested
+  #   confidence: null                 # only set for taxonomy_suggested
+  #   rationale: ""                    # only set for taxonomy_suggested —
+  #                                     # the specific evidence Phase 0 cited
+
+# 19-career-path-planner Step 3.5 — the stepping-stone engine. Only read
+# when a career path plan is being built or re-planned; irrelevant to the
+# discovery/application pipeline. See
+# 19-career-path-planner/references/stepping-stone-engine.md §9.
+stepping_stone:
+  max_hops: 2                    # a three-hop plan is a forecast, not a
+                                 # plan — its third hop rests on a profile
+                                 # nobody can predict, and the re-plan rule
+                                 # would regenerate it anyway
+  gap_density_threshold: 8       # unresolved Step 2 requirements above
+                                 # which a hop is proposed on planning-
+                                 # horizon grounds alone
+  min_liquidity_postings: 5      # across configured sources, 90-day window.
+                                 # Below this the hop is FLAGGED, never
+                                 # dropped — a scarce role can still be the
+                                 # right one, and a thin local market
+                                 # undercounts network-filled roles
+  liquidity_probe: true          # false = taxonomy market_signals only, no
+                                 # live census. The probe is read-only and
+                                 # queues nothing either way
+  community_intel: true          # false makes the engine taxonomy-only,
+                                 # losing the intermediate titles O*NET does
+                                 # not model (secondments, agency bridges,
+                                 # internal-transfer titles)
+  allow_comp_regression: "ask"   # ask | never | allow. "ask" is the default
+                                 # deliberately: "never" silently removes
+                                 # every sector switch and most management-
+                                 # track entries, and a default that hides
+                                 # options is worse than one that asks
+
+# Updated by 07-context-architect every time this profile is re-confirmed.
+last_confirmed_at: null

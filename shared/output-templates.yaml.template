@@ -1,0 +1,45 @@
+# shared/output-templates.yaml — named structural templates for any
+# outward-facing artifact this pipeline produces. Copy this template to
+# output-templates.yaml before first use. Never hand-filled — seeded
+# entirely through 21-output-templates' conversational elicitation; see
+# that skill's own confirm-before-write step (Rule 11 — this file is
+# confirmed directly by that skill, not routed through
+# 07-context-architect, since these are pipeline-behavior preferences,
+# not career-fact memory).
+#
+# Empty by default. Every producing skill (06-cover-letter,
+# 08-application-qa, 05-resume-customizer, 14-social-discovery-outreach,
+# 17-cold-prospecting) falls back to its own existing built-in default
+# whenever nothing here matches — this file is purely additive, and an
+# empty list changes nothing about current behavior.
+
+templates: []
+  # - template_id: ""
+  #   artifact_type: ""    # cover_letter | application_answer | resume |
+  #                          # cold_email | cold_dm | social_reply |
+  #                          # social_post
+  #   name: ""              # Kene's own name for it
+  #   input_method: ""       # strict_outline | general_instructions |
+  #                          # writing_samples
+  #   application_mode: ""   # append | replace — independent of input_method
+  #   structure:
+  #     - section: ""
+  #       guidance: ""       # guides structure/tone, never the actual
+  #                          # words used in a generated draft
+  #   strictness: "guide"    # guide | strict — independent third axis,
+  #                          # how rigidly to follow whichever structure
+  #                          # application_mode produces
+  #   trigger_conditions: []
+  #   recipient_targeting:
+  #     mode: ""              # individual_list | described_category | any
+  #     individuals: []
+  #     category_description: ""
+  #   parameters: {}           # artifact-specific — see
+  #                            # 21-output-templates/references/
+  #                            # elicitation-checklists.md
+  #   source_material: ""       # URL/document reference, if
+  #                             # input_method: writing_samples
+  #   created_at: ""
+  #   last_used_at: null
+
+last_reviewed_at: null

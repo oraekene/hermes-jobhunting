@@ -1,0 +1,29 @@
+# shared/discovery_queries.yaml — active social_listening queries for
+# 14-social-discovery-outreach. Copy this template to
+# discovery_queries.yaml before that skill's discovery pass runs.
+#
+# This file was described inline in 14-social-discovery-outreach/references/discovery-query-design.md
+# but never actually shipped as its own template — caught in a later
+# audit pass and fixed here rather than left as documentation with
+# nothing backing it. See that file for the full reasoning on why three
+# sources (manual/hermes_generated/example_guided) coexist, and for the
+# self-improving query loop that reads performance data back out of
+# this file.
+
+queries: []
+  # - id: ""
+  #   source: ""              # manual | hermes_generated | example_guided
+  #   platform: ""
+  #   query_text: ""
+  #   origin_example: ""       # the pasted post that prompted this, if
+  #                            # source: example_guided
+  #   status: "active"         # active | paused | retired
+  #   performance:
+  #     posts_returned: 0
+  #     classified_relevant: 0   # apply_link + dm/email/reply_instructions
+  #     led_to_outcome: 0         # fed into a real application or outreach
+  #                                # record that got a reply/progressed
+  #     last_evaluated_at: null
+  #   created_at: ""
+
+last_reviewed_at: null

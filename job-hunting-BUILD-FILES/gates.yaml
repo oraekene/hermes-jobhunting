@@ -1,0 +1,800 @@
+# gates.yaml — Gate Registry
+#
+# The single source of truth for every point in the pipeline where execution
+# stops for a human decision. Three surfaces render from this file and nothing
+# else: the permission-pack UI, the flat expert toggle list, and the settings
+# info panel (description + on/off worked example).
+#
+# Derived from: shared/pipeline-rules.md (Rules 0-5),
+# shared/pipeline-rules-addendum.md (Rules 6-16), security/security-setup.md,
+# security/hooks/*.py, and every confirm-point in the 25 skill files.
+#
+# FIELD CONTRACT
+#   id            stable, never reused, never renamed (packs and telemetry key on it)
+#   class         irreversible_external | reversible_external | reversible_internal | structural
+#   pack          which permission pack this belongs to
+#   owner         the file that implements the gate
+#   rule          the pipeline rule it enforces, if any
+#   default       on | off  (on = gate active = user is asked)
+#   toggleable    true | false
+#   arm_required  true  -> typed confirmation phrase, not a tap, to switch OFF
+#   expires_days  auto-approval lapses after N days and must be re-armed
+#   cap_applies   the daily volume cap still binds even with the gate off
+#   enforcement   how many independent layers back it
+#   panel.when_on  worked example of what happens with the gate ON
+#   panel.when_off worked example of what happens with the gate OFF
+#
+# CLASS DEFINITIONS
+#   irreversible_external  a real thing happens to a third party and cannot be undone
+#   reversible_external    touches the outside world but is undoable or low-stakes
+#   reversible_internal    writes to the user's own files, memory, config or database
+#   structural             a mechanical prerequisite, not a permission — never toggleable
+
+meta:
+  version: 1
+  generated_from: 171 shipped files
+  gate_count: 38
+  policy:
+    # Two gates can never be switched off by anyone. Not a trust judgement —
+    # these are the two whose failure mode lands on someone who never agreed
+    # to use this product.
+    non_negotiable: [GATE-DM-PAIRING, GATE-SENSITIVE-DISCLOSURE]
+    # Turning any irreversible_external gate off requires all of:
+    irreversible_off_requires:
+      - typed confirmation phrase
+      - own screen, never bundled in a pack toggle
+      - expiry and re-arm
+      - daily cap still enforced
+      - entry written to the audit log
+    integrity:
+      # The policy file is read by the submit hook. If the agent can write it,
+      # a prompt injection in a scraped posting can open every gate at once.
+      policy_path: "~/.hermes/job-hunting-policy.yaml   # OUTSIDE the agent working dir"
+      checksum_at_session_start: true
+      refuse_on_mid_session_change: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+packs:
+  - id: PACK-SENDING
+    label: Sending and submitting
+    blurb: Anything that reaches an employer, a recruiter or a stranger.
+    class_hint: irreversible_external
+  - id: PACK-PUBLISHING
+    label: Publishing under your name
+    blurb: Public pages, profile edits, comments and posts.
+    class_hint: irreversible_external
+  - id: PACK-SPENDING
+    label: Spending money and credits
+    blurb: Paid lookups and metered platform credits.
+    class_hint: irreversible_external
+  - id: PACK-MEMORY
+    label: Writing to your memory
+    blurb: Facts about your career, before they are stored.
+    class_hint: reversible_internal
+  - id: PACK-PREFERENCES
+    label: Changing how the tool works
+    blurb: Targets, templates, volume caps, schedules.
+    class_hint: reversible_internal
+  - id: PACK-SELFEDIT
+    label: The tool changing itself
+    blurb: Skill edits proposed by the learning loop.
+    class_hint: reversible_internal
+  - id: PACK-RESEARCH
+    label: Reading the outside world
+    blurb: Fetching pages, scanning your inbox, looking up contacts.
+    class_hint: reversible_external
+  - id: PACK-SYSTEM
+    label: System safety
+    blurb: Command guards, backups, install integrity.
+    class_hint: reversible_internal
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLASS A — IRREVERSIBLE EXTERNAL  (11 gates)
+# ═════════════════════════════════════════════════════════════════════════════
+gates:
+
+- id: GATE-SUBMIT-APPLICATION
+  label: Submitting a job application
+  class: irreversible_external
+  pack: PACK-SENDING
+  owner: 10-approval-and-submit/SKILL.md
+  rule: Rule 1
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  enforcement:
+    layers: 3
+    detail:
+      - skill's own Telegram approval message, reads the reply for intent
+      - Hermes dangerous-command approval on the submit action
+      - security/hooks/verify-submit-approval.py, reads approval_decision from the DB
+    note: >
+      Layer 3 fails CLOSED on every branch it can see and fails OPEN on any tool
+      name not in WATCHED_TOOLS. If this gate is switched off, the hook needs an
+      explicit signed bypass — never a wildcard allow, or the gate is gone for
+      injected instructions too.
+  panel:
+    when_on: >
+      A Product Manager role at Acme is filled in and ready. You get a message
+      with the company, the role, a screenshot of the completed form and the
+      list of claims made. Nothing is sent until you reply approve. If you say
+      nothing, it waits.
+    when_off: >
+      The same application is submitted the moment it is built — typically
+      within a minute of the posting being found. You find out it went out when
+      it appears in your sent list. If a claim was wrong, it has already reached
+      the employer.
+
+- id: GATE-SEND-DM
+  label: Sending a direct message
+  class: irreversible_external
+  pack: PACK-SENDING
+  owner: 14-social-discovery-outreach/SKILL.md
+  rule: Rule 6, Rule 12
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  enforcement: {layers: 2, detail: [per-message approval, send-tier check against the capability matrix]}
+  panel:
+    when_on: >
+      A hiring manager posts that they are hiring. A message is drafted using
+      your pitch catalog and shown to you with the post it responds to. You
+      approve or edit it.
+    when_off: >
+      The message sends itself. On a platform where automated sending is
+      against the rules, the account carrying that risk is yours, not the tool's.
+
+- id: GATE-SEND-EMAIL
+  label: Sending a cold email
+  class: irreversible_external
+  pack: PACK-SENDING
+  owner: 17-cold-prospecting/SKILL.md
+  rule: Rule 1, Rule 8
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  enforcement: {layers: 2, detail: [per-message approval, claims-evidence check under Rule 8]}
+  panel:
+    when_on: >
+      A pitch to a company you have researched is drafted, with every claim
+      about their situation traced to a line in the research record. You read it
+      before it sends.
+    when_off: >
+      It sends on the research pass's own schedule. A wrong guess about a
+      company's problems is now something you asserted to them in writing.
+
+- id: GATE-SEND-INMAIL
+  label: Spending an InMail credit
+  class: irreversible_external
+  pack: PACK-SENDING
+  owner: 14-social-discovery-outreach/references/inmail-credits.md
+  rule: Rule 14
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  enforcement: {layers: 2, detail: [per-message approval, credit-balance check]}
+  panel:
+    when_on: >
+      You are told which of your monthly credits this would use and how many
+      remain, before it goes. One InMail per recipient — there is no follow-up
+      without a reply.
+    when_off: >
+      Credits are spent as targets are found. A month's allowance can be gone in
+      a day, on recipients you never saw.
+
+- id: GATE-LINKEDIN-CONNECT
+  label: Sending a connection request
+  class: irreversible_external
+  pack: PACK-SENDING
+  owner: 14-social-discovery-outreach/references/linkedin-connection-flow.md
+  rule: Rule 13, Rule 14
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  enforcement: {layers: 2, detail: [per-request approval, human-paced execution on your own session]}
+  panel:
+    when_on: >
+      Each request is shown with the note attached, then sent at human pace on
+      your own logged-in session.
+    when_off: >
+      Requests go out in batches. LinkedIn's pattern detection is looking for
+      exactly this shape, and the account it acts against is yours.
+
+- id: GATE-PUBLIC-REPLY
+  label: Commenting publicly under your name
+  class: irreversible_external
+  pack: PACK-PUBLISHING
+  owner: 14-social-discovery-outreach/SKILL.md
+  rule: Rule 1
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  enforcement: {layers: 1, detail: [per-comment approval, labelled REPLY so it reads differently from a DM]}
+  panel:
+    when_on: >
+      A reply to a public thread is drafted and marked as going up publicly,
+      visible to everyone in that thread, before you approve it.
+    when_off: >
+      Comments post themselves under your name where colleagues and future
+      employers can read them.
+
+- id: GATE-PROFILE-EDIT
+  label: Editing your live LinkedIn profile
+  class: irreversible_external
+  pack: PACK-PUBLISHING
+  owner: 24-linkedin-profile-optimizer/SKILL.md
+  rule: Rule 1
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: false
+  enforcement: {layers: 1, detail: [explicit approval per individual change]}
+  panel:
+    when_on: >
+      Each headline, summary or role change is proposed one at a time with the
+      current text beside the new one.
+    when_off: >
+      Your public profile is rewritten. Your network sees the edit activity, and
+      so does your current employer.
+
+- id: GATE-PORTFOLIO-PUBLISH
+  label: Publishing your portfolio page
+  class: irreversible_external
+  pack: PACK-PUBLISHING
+  owner: 23-portfolio-onepager/references/hosting-and-publish.md
+  rule: Rule 1
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: false
+  enforcement: {layers: 1, detail: [confirm before the page goes to a public URL]}
+  panel:
+    when_on: >
+      The page is built locally and you open it before deciding whether it goes
+      to a public address.
+    when_off: >
+      It publishes on build. Anything drawn from memory that you would not have
+      put on a public page is now on one.
+
+- id: GATE-TESTIMONIAL-POST
+  label: Posting your results publicly
+  class: irreversible_external
+  pack: PACK-PUBLISHING
+  owner: (new — outcome-sharing feature)
+  rule: Rule 1
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  cap_applies: false
+  enforcement:
+    layers: 2
+    detail:
+      - per-post approval
+      - every figure traced to a database row before it can appear in the draft
+  note: Deliberately not toggleable. Auto-posting someone's job-search statistics is not a convenience anyone wants.
+  panel:
+    when_on: >
+      After your sixth interview invite, a short post is drafted in your own
+      writing style with the underlying numbers shown beside it. You edit or
+      discard it.
+    when_off: not available — this gate cannot be switched off
+
+- id: GATE-SENSITIVE-DISCLOSURE
+  label: Using sensitive personal information in an outward document
+  class: irreversible_external
+  pack: PACK-PUBLISHING
+  owner: 20-interests-profile/SKILL.md
+  rule: Rule 10
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  cap_applies: false
+  enforcement: {layers: 1, detail: [per-use confirmation at the point of use, separate from the confirmation that stored it]}
+  note: >
+    NON-NEGOTIABLE. Covers religion, health and disability, political and
+    organising activity, and adjacent protected characteristics. Recording is
+    free and unrestricted; disclosure is always a conscious per-use choice.
+    Automating this would mean the tool outing someone to an employer.
+  panel:
+    when_on: >
+      A cover letter would mention volunteer work with a religious organisation
+      because it matches the employer's stated values. You are asked, for this
+      one letter, whether to include it.
+    when_off: not available — this gate cannot be switched off
+
+- id: GATE-PAID-SPEND
+  label: Spending real money on contact lookups
+  class: irreversible_external
+  pack: PACK-SPENDING
+  owner: 22-contact-enrichment/SKILL.md
+  rule: null
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 30
+  cap_applies: true
+  budget_field: tier3_monthly_budget_usd
+  panel:
+    when_on: >
+      The free cascade runs first — public sources, self-hosted tools, then
+      rotated free tiers, over 325 lookups a month before anything costs
+      money. Only past that are you asked, with the price.
+    when_off: >
+      Paid lookups run automatically up to your monthly budget. Set the budget
+      before switching this off; the default is zero, which means nothing spends.
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLASS B — REVERSIBLE EXTERNAL  (7 gates)
+# ═════════════════════════════════════════════════════════════════════════════
+
+- id: GATE-SITE-SESSION
+  label: Driving your logged-in browser session
+  class: reversible_external
+  pack: PACK-RESEARCH
+  owner: shared/site-access-model.md
+  rule: null
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: You are told each time the tool needs to act inside a site you are logged into.
+    when_off: It uses your session when it needs to, without saying so each time.
+
+- id: GATE-INBOX-SCAN
+  label: Reading your email for application outcomes
+  class: reversible_external
+  pack: PACK-RESEARCH
+  owner: 11-analytics-and-learning/SKILL.md
+  rule: null
+  default: "off"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  note: Read-only by construction — envelope list, message read, and a label copy. Never deletes, never sends, never replies.
+  panel:
+    when_on: >
+      You confirm each scan. Slower, and outcomes get logged later than they
+      happened.
+    when_off: >
+      Rejections and interview invites are detected and logged automatically, so
+      the daily nudge only asks about applications with no email trace at all.
+
+- id: GATE-CALENDAR-CREATE
+  label: Creating calendar events
+  class: reversible_external
+  pack: PACK-RESEARCH
+  owner: 13-interview-prep/SKILL.md
+  rule: null
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: An interview is confirmed for Thursday; you are asked before a prep block goes on your calendar.
+    when_off: Prep blocks appear automatically. Anyone who can see your calendar can see them.
+
+- id: GATE-RESEARCH-FETCH
+  label: Fetching company and person research
+  class: reversible_external
+  pack: PACK-RESEARCH
+  owner: 12-company-research/SKILL.md
+  rule: null
+  default: "off"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: You approve each research pass. Applications wait on you.
+    when_off: Research runs and caches per company, feeding the resume, letter and interview prep.
+
+- id: GATE-ENRICHMENT-LOOKUP
+  label: Free-tier contact lookups
+  class: reversible_external
+  pack: PACK-RESEARCH
+  owner: 22-contact-enrichment/SKILL.md
+  rule: null
+  default: "off"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: You approve each lookup.
+    when_off: The free cascade runs automatically. No money moves — that is a separate gate.
+
+- id: GATE-SOCIAL-POLL
+  label: Polling social platforms for opportunities
+  class: reversible_external
+  pack: PACK-RESEARCH
+  owner: 14-social-discovery-outreach/references/platform-capability-matrix.md
+  rule: Rule 6
+  default: "off"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  note: Frequency is capped independently of this gate. Tight polling of LinkedIn carries the same detection risk as automated messaging.
+  panel:
+    when_on: Listening runs only when you ask.
+    when_off: Scheduled low-frequency scans surface posts worth replying to.
+
+- id: GATE-API-KEY-CONNECT
+  label: Connecting a provider API key
+  class: reversible_external
+  pack: PACK-SPENDING
+  owner: 22-contact-enrichment/references/api-key-setup.md
+  rule: null
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  note: >
+    Only a 1Password item reference is ever stored, never the key itself. The
+    key is injected at the moment of the call and exists nowhere in this
+    package's files. Not toggleable because there is nothing to automate — a
+    key can only ever be connected by the person who has it.
+  panel:
+    when_on: You connect a key deliberately, once, and it is read from your vault at the point of use.
+    when_off: not available
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLASS C — REVERSIBLE INTERNAL  (16 gates)
+# ═════════════════════════════════════════════════════════════════════════════
+
+- id: GATE-MEMORY-WRITE
+  label: Storing a new fact about your career
+  class: reversible_internal
+  pack: PACK-MEMORY
+  owner: 07-context-architect/SKILL.md
+  rule: Rule 5
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  note: 07-context-architect is the only skill permitted to write here. Everything else reads.
+  panel:
+    when_on: >
+      A story you tell in passing is read back to you before it is stored, so a
+      detail you misremembered does not become the version used in every future
+      application.
+    when_off: >
+      Facts are inferred and stored silently. A wrong figure propagates into
+      resumes and interview answers until you notice it.
+
+- id: GATE-STAR-WRITE
+  label: Adding a story to your example bank
+  class: reversible_internal
+  pack: PACK-MEMORY
+  owner: 07-context-architect/SKILL.md
+  rule: Rule 5
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: A story with an unresolved number is either given the number or explicitly marked as having none, before it is saved.
+    when_off: Stories are written as told, gaps included. An interview answer later relies on a figure nobody checked.
+
+- id: GATE-VOICE-NUMBER-ECHO
+  label: Confirming numbers from voice notes
+  class: reversible_internal
+  pack: PACK-MEMORY
+  owner: 07-context-architect/references/voice-interview-mode.md
+  rule: Rule 5
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: >
+      You say "25% growth over six months" and it is read back as text before
+      anything is written.
+    when_off: >
+      A transcription of "25" heard as "225" is stored as a fact and appears on
+      your resume.
+
+- id: GATE-FACT-CONFLICT
+  label: Resolving contradictory facts
+  class: reversible_internal
+  pack: PACK-MEMORY
+  owner: 07-context-architect/references/fact-conflict-resolution.md
+  rule: Rule 5
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: Two different team sizes for the same project are shown side by side and you say which is right.
+    when_off: The newer one wins silently. Both versions may already have gone out to different employers.
+
+- id: GATE-TARGET-PROFILE-WRITE
+  label: Changing your target role and constraints
+  class: reversible_internal
+  pack: PACK-PREFERENCES
+  owner: 07-context-architect/SKILL.md
+  rule: Rule 5
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  covers: [seniority_band, locations, salary_floor, visa_sponsorship_required, title_variants, industries_exclude, companies_exclude]
+  panel:
+    when_on: A suggestion to widen your search to adjacent titles is proposed and you accept or decline it.
+    when_off: The search target drifts on its own. You start seeing roles you would not have chosen.
+
+- id: GATE-FIDELITY-MODE
+  label: Changing how strictly claims must be evidenced
+  class: reversible_internal
+  pack: PACK-PREFERENCES
+  owner: 09-risk-tactics-gate/SKILL.md
+  rule: Rule 2
+  default: "on"
+  toggleable: false
+  arm_required: true
+  expires_days: null
+  values: [strict, balanced, embellish]
+  ships_as: strict
+  note: >
+    Not auto-toggleable — no skill may change this on its own, by rule. It moves
+    only through an explicit confirmation, because it governs what your
+    documents are allowed to claim happened.
+  panel:
+    when_on: >
+      strict — every claim cites a specific line in your resume, portfolio or
+      story bank. Where no evidence exists the tactic is dropped and the gap is
+      flagged to you.
+    when_off: >
+      embellish — claims may be extended past what the evidence states. What
+      goes out is something you may have to defend in an interview without
+      anything on file behind it.
+
+- id: GATE-OUTPUT-TEMPLATE-WRITE
+  label: Saving a named output format
+  class: reversible_internal
+  pack: PACK-PREFERENCES
+  owner: 21-output-templates/SKILL.md
+  rule: Rule 11
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  note: The one confirmed-write file that does not route through 07-context-architect, deliberately — it is a formatting preference, not a career fact.
+  panel:
+    when_on: A structure you asked for once is confirmed before it becomes the default for that output type.
+    when_off: Formats are saved as inferred. Later outputs follow a shape you never chose.
+
+- id: GATE-PITCH-CONFIRM
+  label: Confirming a service you can deliver
+  class: reversible_internal
+  pack: PACK-MEMORY
+  owner: shared/pitch-catalog.md
+  rule: null
+  default: "on"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: Each catalog entry is confirmed with its evidence before it can appear in a pitch.
+    when_off: Entries are inferred from your history. A pitch offers something you would rather not have promised.
+
+- id: GATE-PITCH-WILDCARD
+  label: Confirming a stretch offer
+  class: reversible_internal
+  pack: PACK-MEMORY
+  owner: shared/pitch-catalog.md
+  rule: Rule 9
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  note: >
+    Deliberately heavier and visibly distinct from the ordinary confirm flow —
+    an explicit "you are telling me you can actually deliver this". Every pitch
+    drawing on one carries a WILDCARD tag through to the approval message, so
+    approval is never given on autopilot beside a routine evidence-backed pitch.
+  panel:
+    when_on: A stretch capability is confirmed separately, in its own conversation, and tagged wherever it is used.
+    when_off: not available
+
+- id: GATE-CALIBRATION-CHANGE
+  label: Changing match-score thresholds
+  class: reversible_internal
+  pack: PACK-PREFERENCES
+  owner: shared/dynamic-target-calibration.md
+  rule: null
+  default: "off"
+  toggleable: true
+  arm_required: false
+  expires_days: null
+  panel:
+    when_on: You approve each threshold change.
+    when_off: Thresholds adjust to what is actually landing responses. Ships at 70 minimum, 50 stretch — 55/35 if you are starting out.
+
+- id: GATE-TIER-CONFIG-CHANGE
+  label: Changing your daily volume cap
+  class: reversible_internal
+  pack: PACK-PREFERENCES
+  owner: shared/tier-config.yaml
+  rule: Rule 3
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  note: >
+    The cap governs how many packages are PREPARED per day, never how many are
+    sent — nothing sends itself. This cap continues to bind even when sending
+    gates are switched off, and that is the point.
+  panel:
+    when_on: A change to how many applications get built per day is your decision.
+    when_off: not available
+
+- id: GATE-PIPELINE-PAUSE
+  label: Pausing and resuming the pipeline
+  class: reversible_internal
+  pack: PACK-PREFERENCES
+  owner: 00-orchestrator/SKILL.md
+  rule: Rule 15
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  note: While paused, discovery stops but conversation does not. Career-pulse keeps running.
+  panel:
+    when_on: Pausing and resuming are always your call, and a pause has a visible expiry.
+    when_off: not available
+
+- id: GATE-SKILL-EDIT
+  label: Applying a change the tool proposes to itself
+  class: reversible_internal
+  pack: PACK-SELFEDIT
+  owner: 11-analytics-and-learning/SKILL.md
+  rule: null
+  default: "on"
+  toggleable: true
+  arm_required: true
+  expires_days: 90
+  enforcement: {layers: 1, detail: [skills.write_approval — edits stage under ~/.hermes/pending/skills/ until approved]}
+  note: >
+    skills.write_approval is GLOBAL, not scoped to this package, and it does NOT
+    gate archival — a separate path. Two controls, only one of which is a gate.
+  panel:
+    when_on: >
+      "Values-alignment section shows no response-rate difference over 40
+      applications — recommend making it optional." You read the proposed edit
+      and the numbers behind it before it takes effect.
+    when_off: >
+      The tool rewrites its own instructions weekly on its own evidence. When
+      output quality changes you will not know which edit did it.
+
+- id: GATE-GEPA-DEPLOY
+  label: Applying an optimiser-evolved skill
+  class: reversible_internal
+  pack: PACK-SELFEDIT
+  owner: 11-analytics-and-learning/references/gepa-self-evolution.md
+  rule: null
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  scope: [05-resume-customizer, 06-cover-letter, 08-application-qa]
+  note: >
+    Not toggleable, and 09-risk-tactics-gate is excluded from the feature
+    entirely: the optimiser's constraint validator checks size, growth,
+    emptiness and frontmatter — nothing about content — so nothing in it would
+    notice a skill becoming more permissive. Pointing that at the one skill
+    whose whole value is being conservative is the wrong first experiment.
+  panel:
+    when_on: An evolved version is produced as a file to diff and read. You apply it by hand or not at all.
+    when_off: not available
+
+- id: GATE-SKILL-COMPOSER-WRITE
+  label: Adding a new capability to the tool
+  class: reversible_internal
+  pack: PACK-SELFEDIT
+  owner: 18-skill-composer/SKILL.md
+  rule: null
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  note: Defaults to writing an addendum rather than rewriting an existing file, so hand-tuned behaviour is never silently replaced.
+  panel:
+    when_on: A new capability is drafted and shown to you before it is installed.
+    when_off: not available
+
+- id: GATE-BACKUP-RESTORE
+  label: Restoring from a backup
+  class: reversible_internal
+  pack: PACK-SYSTEM
+  owner: security/backup-and-recovery.md
+  rule: null
+  default: "on"
+  toggleable: false
+  arm_required: false
+  expires_days: null
+  note: Restore overwrites current state. Backups themselves run unattended and need no gate.
+  panel:
+    when_on: A restore states what will be overwritten and from which date before it runs.
+    when_off: not available
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CLASS D — STRUCTURAL  (4)  not permissions, never toggleable, never in a pack
+# ═════════════════════════════════════════════════════════════════════════════
+
+- id: GATE-DM-PAIRING
+  label: Who is allowed to approve
+  class: structural
+  pack: null
+  owner: security/security-setup.md
+  rule: Rule 1
+  default: "on"
+  toggleable: false
+  note: >
+    NON-NEGOTIABLE. Every approval in this registry means nothing if any account
+    can send it. GATEWAY_ALLOW_ALL_USERS must never be true on a deployment of
+    this package. Each customer needs their own paired identity — one pairing
+    code per customer — so customer A can never see or approve customer B's
+    staged applications.
+
+- id: GATE-DANGEROUS-COMMAND
+  label: Destructive command guard
+  class: structural
+  pack: PACK-SYSTEM
+  owner: security/security-setup.md
+  rule: null
+  default: "on"
+  toggleable: false
+  note: >
+    Hermes's own command-approval list plus dcg. Set dcg fail_closed = true on
+    this deployment; its default is fail-open and this package's own hook fails
+    closed. IMPORTANT INTERACTION: a container terminal backend causes Hermes to
+    treat the container boundary as the security boundary and SKIP
+    dangerous-command approval inside it. That protects the host machine and
+    does nothing to stop an unreviewed application being submitted.
+
+- id: GATE-INSTALL-INTEGRITY
+  label: Install completeness check
+  class: structural
+  pack: PACK-SYSTEM
+  owner: 00-orchestrator/scripts/install-check.py
+  rule: Rule 0
+  default: "on"
+  toggleable: false
+  note: >
+    shared/ sits outside every skill directory, so installing one skill brings
+    none of the rules it declares it must follow. A partial install does not
+    crash — it produces a skill that reads convincingly with no rules, no
+    database and no profile behind it. Verified at first run of any session.
+
+- id: GATE-PLATFORM-PREREQ
+  label: Platform prerequisites before a send is even possible
+  class: structural
+  pack: null
+  owner: shared/pipeline-rules-addendum.md
+  rule: Rule 13
+  default: "on"
+  toggleable: false
+  covers:
+    - LinkedIn connection accepted before a DM to a stranger
+    - Instagram/Facebook 24-hour window opened by the recipient
+    - X follow-back state
+    - posting still exists — re-verified before the approval message is built
+  note: >
+    Not a permission. Rule 1 governs whether a human approved sending; this
+    governs whether sending is a real action yet. Approval cannot skip it and
+    switching gates off does not remove it.

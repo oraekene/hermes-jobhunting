@@ -1,0 +1,131 @@
+# shared/portfolio-manifest.yaml
+#
+# What is eligible for a portfolio page, and what Kene actually chose per
+# variant. Copy this template, then let 23-portfolio-onepager populate the
+# pool by scanning — do NOT hand-fill `pool`.
+#
+# Three layers, and the precedence between them is the whole design:
+#
+#   never_include   beats everything, always. Not overridable per variant.
+#   always_include  goes on every variant unless it is in never_include.
+#   variants[].items  Kene's ordered pick for that page.
+#
+# Order inside a variant is MEANINGFUL. On a one-pager the first item is
+# most of the impression, and the page renders the list as given.
+
+# ─────────────────────────────────────────────────────────────────────
+# 1. THE POOL — everything eligible. Generated, not typed.
+#
+# Built by scanning the STAR bank, domain-knowledge.md and the artifact
+# registry. Refreshed on rebuild and on the quarterly pass. This is the
+# menu Kene picks from; nothing enters a page that is not here first.
+# ─────────────────────────────────────────────────────────────────────
+pool:
+  work_items:
+    - id: example-credit-scoring
+      source: "star:credit-scoring-pipeline"     # where it came from
+      summary: "Rebuilt underwriting scoring; approval latency 4d -> 6h"
+      figure: "4 days to 6 hours"                # must clear the same
+                                                 # quantification bar as a
+                                                 # resume bullet
+      org: "Example Fintech"
+      period: "2024"
+      tags: [fintech, ml, backend]               # used to rank per target
+      artifacts: [ex-repo, ex-writeup]           # ids from artifacts below
+      added_at: null
+      last_reviewed_at: null
+
+  artifacts:
+    - id: ex-repo
+      type: repo                 # deployed | repo | notebook | writeup |
+                                 # demo | package | paper
+      url: "https://github.com/..."
+      label: "scoring-service"
+      ownership: own             # own | public_with_permission
+                                 # NOTHING employer-owned, NDA-covered, or
+                                 # containing third-party data. Checked at
+                                 # add time and again at publish, with no
+                                 # override path — see the skill's boundary
+                                 # section.
+      readable: null             # repo: does the README survive 30 seconds?
+                                 # notebook: are outputs committed / does the
+                                 # Colab actually run? A link that opens to a
+                                 # wall of code proves nothing.
+      last_checked_at: null      # link-rot check, mirrored to
+      last_status: null          # portfolio_artifacts in addendum 18
+
+  capabilities:
+    - id: example-cap-data
+      group: "Data & ML"         # grouped, never a wall of tags
+      items: "Python, dbt, feature stores, model monitoring"
+      evidence: "domain-knowledge.md#data-ml"
+
+# ─────────────────────────────────────────────────────────────────────
+# 2. GLOBAL RULES
+# ─────────────────────────────────────────────────────────────────────
+
+# On every variant regardless of target. Keep this to one or two genuine
+# flagship pieces — if everything is always-include, the per-variant
+# tailoring that justifies variants at all has been thrown away.
+always_include: []
+
+# Never public, on any variant, for any target. Wins over always_include
+# and over any variant selection.
+#
+# This is the right home for work that is technically shareable but that
+# Kene would rather not lead with — a project he has outgrown, a client he
+# would rather not name, anything tied to a current employer he is
+# searching quietly from. No justification required and none is asked for.
+never_include: []
+
+# ─────────────────────────────────────────────────────────────────────
+# 3. VARIANTS — two axes. See the skill's "Variants" section.
+#
+# Cap at four or five across BOTH axes. Every variant is a page that can
+# go stale independently, and being out of date is a portfolio's worst
+# failure. If a sixth is wanted, first ask whether two existing ones have
+# converged.
+# ─────────────────────────────────────────────────────────────────────
+variants:
+  # AXIS 1 — target-title cluster (application-facing)
+  - slug: example-fintech-pm
+    axis: target_title
+    built_for: "Product Manager, fintech"
+    title_cluster: ["Product Manager", "Senior Product Manager"]
+    positioning: null            # the one-sentence line. Hardest thing on
+                                 # the page; worth iterating. Confirmed by
+                                 # Kene before it ships.
+    items: []                    # ORDERED ids from pool.work_items
+    capabilities: []             # ORDERED ids from pool.capabilities
+    hosting:
+      provider: null             # cloudflare_pages (default) | netlify |
+                                 # github_pages | manual
+      project_name: null
+      url: null
+      # No credentials here, ever. wrangler/netlify/gh own their own auth —
+      # see 23-portfolio-onepager/references/hosting-and-publish.md for why
+      # this file must stay
+      # safe to sync.
+    published_at: null
+    last_gate_pass_at: null      # 09-risk-tactics-gate, pre-publish
+
+  # AXIS 2 — pitch mode (outreach-facing). Only role_creation and service
+  # generally justify their own; role_fit outreach reuses the matching
+  # target-title variant above.
+  # - slug: example-fractional-data
+  #   axis: pitch_mode
+  #   pitch_mode: service        # role_fit | role_creation | service
+  #   built_for: "Fractional data lead, Nigerian fintech"
+
+# ─────────────────────────────────────────────────────────────────────
+# Behaviour notes, so they survive a reader who only opens this file:
+#
+# - A REBUILD NEVER SILENTLY RE-SELECTS. The existing `items` list is the
+#   starting point every time. A page Kene curated should not rearrange
+#   itself because a new STAR entry landed.
+# - NEW MATERIAL IS OFFERED, NEVER INSERTED. The quarterly refresh raises
+#   a strong new fit as a question; it does not apply a diff.
+# - EVERYTHING HERE IS PROPOSE-CONFIRM-SAVE. This skill drafts a selection
+#   with reasoning per item; Kene adjusts in plain language; the result is
+#   written once he confirms.
+# ─────────────────────────────────────────────────────────────────────

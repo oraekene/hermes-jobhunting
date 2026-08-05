@@ -1,0 +1,17 @@
+# shared/enrichment-provider-keys.yaml — which paid enrichment
+# providers Kene has connected, and where the actual credential lives.
+# Stores a 1Password item reference only, never a raw key value — see
+# 22-contact-enrichment/references/api-key-setup.md for the full setup
+# flow (uses the official Hermes `security/1password` optional skill).
+# Safe to read/inspect/back up like any other config file in this
+# package, precisely because no secret value is ever written here.
+
+connected_providers: []
+  # - provider: ""                # hunter | apollo | snov | getprospect |
+  #                                # prospeo | skrapp | parallel_cli |
+  #                                # zerobounce | kickbox | other
+  #   op_item_reference: ""        # e.g. "op://Private/Hunter API/credential"
+  #   connected_at: ""
+  #   status: "active"             # active | revoked | expired
+
+last_updated_at: null

@@ -1,0 +1,81 @@
+# arms.yaml — what the learning loop chooses between
+#
+# An ARM is one concrete way of doing one thing. A FAMILY is a set of arms that
+# are mutually exclusive for a single application, so exactly one arm per family
+# is chosen each time.
+#
+# Two rules that keep this honest:
+#
+# 1. EVERY FAMILY HAS AN INCUMBENT, and it is what the skills already do. The
+#    loop can only ever be measured against something, and "what we did before"
+#    is the only baseline that means anything to a user.
+#
+# 2. NO ARM MAY VIOLATE A GATE. An arm is a choice about phrasing, structure,
+#    timing or channel — never about whether to ask permission. The evidence
+#    gate applies to every arm equally, and an arm that only performs well in
+#    embellish mode is a finding about the mode, not the arm.
+
+meta:
+  version: 1
+  families: 6
+
+families:
+
+  resume_structure:
+    what: How the tailored resume is organised against the posting
+    arms:
+      - {id: incumbent, description: "Current behaviour — reorder bullets by relevance"}
+      - {id: mirror_headings, description: "Mirror the posting's own section headings"}
+      - {id: front_load_quantified, description: "Quantified results first in every role"}
+      - {id: skills_matrix, description: "Explicit skills block matched to the requirement list"}
+
+  keyword_handling:
+    what: How the posting's own language is used
+    arms:
+      - {id: incumbent, description: "Natural incorporation, no exact-phrase forcing"}
+      - {id: exact_phrase, description: "Exact phrases from the posting where truthful"}
+      - {id: synonym_spread, description: "Deliberate synonym variety over repetition"}
+
+  letter_opening:
+    what: The first two sentences of the cover letter
+    arms:
+      - {id: incumbent, description: "Specific observation about the company"}
+      - {id: problem_first, description: "Name the problem the role exists to solve"}
+      - {id: evidence_first, description: "Lead with the single strongest matching result"}
+      - {id: short_direct, description: "Three sentences total, no preamble"}
+
+  letter_length:
+    what: How long the letter runs
+    arms:
+      - {id: incumbent, description: "Roughly 250 words"}
+      - {id: brief, description: "Under 150 words"}
+      - {id: full, description: "350 to 400 words"}
+
+  send_timing:
+    what: When a prepared application is surfaced for approval
+    arms:
+      - {id: incumbent, description: "As soon as it is built"}
+      - {id: business_hours, description: "Held to the employer's working hours"}
+      - {id: within_24h, description: "Held only if the posting is over a day old"}
+
+  outreach_opening:
+    what: The first line of a cold message
+    arms:
+      - {id: incumbent, description: "Reference the post or trigger that surfaced them"}
+      - {id: shared_context, description: "Lead with something genuinely shared"}
+      - {id: direct_ask, description: "State the ask in the first sentence"}
+    capability: cold_outreach          # only offered when the addon is present
+
+# Context dimensions, most general first. Ordering is the whole design: only the
+# top levels ever carry independent posteriors and the rest inherit until they
+# earn their own. Crossing all of these would produce tens of thousands of cells
+# with one observation each.
+hierarchy: [global, ats_platform, industry, seniority_band, application_channel]
+
+policy:
+  exploration_floor: 0.12    # never zero: a cell that stops collecting evidence
+                             # cannot notice the world changing underneath it
+  equivalence_band: 0.02     # randomise among ties — free diversity, since you
+                             # were choosing arbitrarily among them anyway
+  prior_strength_cap: 150    # how loudly the ledger is allowed to speak
+  min_local_trials: 5        # below this, follow the prior rather than noise

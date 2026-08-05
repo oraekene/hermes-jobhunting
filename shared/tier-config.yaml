@@ -1,0 +1,30 @@
+# Daily staging cap — read by 00-orchestrator and 01-job-discovery.
+# This caps how many applications may reach "awaiting_approval" per day.
+# It does NOT cap sending, because nothing in this system sends without
+# a logged human approval (shared/pipeline-rules.md, Rule 1 and Rule 3).
+
+active_tier: starter
+
+tiers:
+  starter:
+    daily_staging_cap: 15          # range Kene described: 10-20/day
+    description: "Default tier — enough volume for one person's active search."
+
+  pro:
+    daily_staging_cap: 75
+    description: "Higher volume for a heavier search or a small team."
+
+  max:
+    daily_staging_cap: 200
+    description: "Upper end Kene described. At this volume, Kene's own
+      approval throughput becomes the real bottleneck, not the pipeline —
+      see approval_rate and approval_latency in weekly_metrics_snapshots.
+      If this tier is ever offered externally, each customer still
+      personally approves every one of their own applications; the tier
+      controls how much gets prepared for them, not how much gets sent
+      on their behalf."
+
+# To change tiers: edit active_tier above, or
+#   hermes config set jobhunting.tier pro
+# (wire this key into 00-orchestrator's cap check if using hermes config
+# rather than editing this file directly)

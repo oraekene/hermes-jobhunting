@@ -1,0 +1,51 @@
+name = "hermes-licensing"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Free plan works for everything except two jobs (per-seat watermarking and the
+# weekly aggregation) — see INFRASTRUCTURE.md. Move to $5 Workers Paid only
+# AFTER the rate limits below are live: on Free a hammered endpoint returns
+# error 1027 and you find out; on Paid it keeps serving and charges you.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hermes"
+database_id = "REPLACE_ME"
+
+[[r2_buckets]]
+binding = "BUNDLES"
+bucket_name = "bundles"
+
+[triggers]
+crons = ["0 3 * * *"]        # trials in and out, commissions off hold,
+                             # affiliate payouts on the 1st
+
+[vars]
+BACHS_API   = "https://api.bachs.io"
+SITE_URL    = "https://yoursite.com"
+MAIL_FROM   = "Kene <hello@yoursite.com>"
+GITHUB_REPO = "YOU/hermes-jobhunting"
+
+# node scripts/keygen.js   then:
+# wrangler secret put TOKEN_PRIVATE_KEY     # signs entitlement tokens
+# wrangler secret put TOKEN_PUBLIC_KEY      # also pinned in the client
+# wrangler secret put BACHS_KEY
+# wrangler secret put BACHS_WEBHOOK_SECRET
+# wrangler secret put RESEND_KEY
+# wrangler secret put ADMIN_TOKEN           # your read-only dashboard
+# wrangler secret put GITHUB_TOKEN          # dispatches per-seat builds
+
+# Rate limiting. Activation and checkout are the two endpoints worth abusing:
+# one enumerates licence ids, the other creates sessions. Both are cheap to
+# call and expensive to serve.
+[[unsafe.bindings]]
+name = "RL_ACTIVATE"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
+[[unsafe.bindings]]
+name = "RL_CHECKOUT"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 20, period = 60 }

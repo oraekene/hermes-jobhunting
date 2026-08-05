@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FBF8F3;--ink:#23201C;--soft:#6B635A;--rule:#E0D8CB;
+      --on:#3F6B4F;--off:#9A5B3D;--tint:#F3EDE3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+     font:400 17px/1.65 Newsreader,Georgia,serif;padding:0 24px 100px}
+.wrap{max-width:680px;margin:0 auto}
+header{padding:72px 0 40px;border-bottom:2px solid var(--ink);margin-bottom:8px}
+h1{font-size:44px;line-height:1.05;font-weight:600;letter-spacing:-.02em}
+.sub{font:400 15px/1.6 "IBM Plex Sans",sans-serif;color:var(--soft);margin-top:14px}
+section{margin-top:56px}
+h2{font-size:29px;font-weight:600;letter-spacing:-.01em;padding-bottom:10px;
+   border-bottom:1px solid var(--rule)}
+h3{font:600 13px/1.4 "IBM Plex Sans",sans-serif;letter-spacing:.1em;
+   text-transform:uppercase;color:var(--soft);margin:34px 0 6px}
+.lede{color:var(--soft);font-size:16px;margin-bottom:18px}
+.demo{margin:26px 0 30px;padding-left:18px;border-left:2px solid var(--rule)}
+.demo h3{font:600 20px/1.3 Newsreader,serif;text-transform:none;letter-spacing:0;
+         color:var(--ink);margin:0 0 4px}
+.trigger{font:400 13px/1.5 "IBM Plex Sans",sans-serif;color:var(--soft);
+         margin-bottom:9px}
+.trigger::before{content:"▸ "}
+.variants{list-style:none;margin-top:12px;font-size:15.5px}
+.variants li{padding:4px 0 4px 14px;border-left:1px solid var(--rule);
+             margin-bottom:2px;color:var(--soft)}
+.variants b{color:var(--ink);font-weight:600}
+.panel{margin:22px 0;background:var(--tint);border-radius:3px;padding:16px 18px}
+.panel h4{font:600 17px/1.35 Newsreader,serif;margin-bottom:12px}
+.lock{font:600 10px/1 "IBM Plex Sans",sans-serif;letter-spacing:.09em;
+      text-transform:uppercase;color:var(--off);border:1px solid var(--off);
+      padding:3px 6px;border-radius:2px;vertical-align:2px;margin-left:6px}
+.side{display:grid;grid-template-columns:74px 1fr;gap:12px;padding:7px 0}
+.side+.side{border-top:1px solid var(--rule)}
+.side span{font:600 11px/1.7 "IBM Plex Sans",sans-serif;letter-spacing:.09em;
+           text-transform:uppercase}
+.side.on span{color:var(--on)} .side.off span{color:var(--off)}
+.side p{font-size:15.5px;line-height:1.55}
+@media(max-width:560px){h1{font-size:34px}.side{grid-template-columns:1fr;gap:2px}}
+</style></head><body><div class="wrap">
+<header><h1>How this works</h1>
+<p class="sub">38 worked situations · 38 points where it asks you first ·
+22 settings. Every one shown both ways, so you can see what the choice
+actually costs.</p></header>
+<section><h2>Getting started</h2><p class="lede">What happens the first time you run it.</p>
+<article class="demo">
+<h3>First install, experienced candidate</h3>
+<p class="trigger">a fresh install with nothing set up yet</p>
+<p>Session one, run to completion: pair the approval channel, then Phase 0-4 of the career interview, then the handful of settings the pipeline cannot run without. Everything else is spread across the following fortnight.</p>
+</article>
+<article class="demo">
+<h3>First install, first-time entrant</h3>
+<p class="trigger">ingestion returns empty or education-only</p>
+<p>A genuinely different first session, not a lower bar on the same one. Interests and coursework carry the weight that work history carries elsewhere, and the match thresholds start lower because entry-level postings overstate their own requirements.</p>
+</article>
+<article class="demo">
+<h3>Paced advanced settings, sessions 2..N</h3>
+<p class="trigger">any later session, paced by observed cadence</p>
+<p>Spread over one to two weeks, ordered by dependency and payoff. Pitch catalog seeding is deliberately last and gets its own session.</p>
+</article>
+<article class="demo">
+<h3>Adding one job source</h3>
+<p class="trigger">add this board / watch this company's careers page</p>
+<p>Its own micro-flow, run any time, distinct from onboarding the person. The posted_at method matters more than the URL — it is what makes the speed metric honest.</p>
+</article>
+</section>
+<section><h2>Applying for jobs</h2><p class="lede">The main loop, from a posting appearing to an application going out.</p>
+<article class="demo">
+<h3>Scheduled discovery to staged application</h3>
+<p class="trigger">discovery every 3h, sweep on its own cadence</p>
+<p>The spine. A posting appears, is parsed, scored, researched, tailored, gated for evidence, and arrives as one message asking approve, edit or skip. Nothing between the posting appearing and that message needs you.</p>
+<ul class="variants">
+<li><b>strict fidelity</b> — unsupported claims stripped, gap written to open_gaps, nothing held for review</li>
+<li><b>balanced fidelity</b> — claims applied and tagged UNVERIFIED, held for review before the the approval message</li>
+<li><b>stretch match</b> — scores 50-70 staged and tagged STRETCH in the the approval message</li>
+<li><b>parallel sweep</b> — build phase delegated across postings, status flows building to staged to awaiting_approval</li>
+</ul>
+</article>
+<article class="demo">
+<h3>Applying to a posting you found yourself</h3>
+<p class="trigger">pasted URL or job description</p>
+<p>The same pipeline entered halfway. Skips discovery and the daily cap entirely — a posting you brought is never rationed.</p>
+</article>
+<article class="demo">
+<h3>Score a role without applying</h3>
+<p class="trigger">how well do I match this</p>
+<p>Read-only. Produces a score and the specific gaps behind it, and stops. Often the honest answer to "should I bother with this one."</p>
+</article>
+<article class="demo">
+<h3>Edit before approving</h3>
+<p class="trigger">reply 'edit' to an the approval message</p>
+<p>An edit re-enters the evidence gate rather than bypassing it, and the edit itself is logged — the learning loop needs to know which packages needed changing.</p>
+</article>
+<article class="demo">
+<h3>Skip or ignore a staged application</h3>
+<p class="trigger">reply 'skip', or silence</p>
+<p>Silence is never consent. The application sits, and it is counted as a decision you made rather than one the system made for you.</p>
+</article>
+<article class="demo">
+<h3>Answering a long application form</h3>
+<p class="trigger">posting carries free-text questions</p>
+<p>Answers are recomposed from confirmed stories. Where no story covers the question, the gap is surfaced rather than invented, and the question joins the bank for next time.</p>
+</article>
+</section>
+<section><h2>Reaching people directly</h2><p class="lede">For roles that were never advertised.</p>
+<article class="demo">
+<h3>Reply to a hiring post found on social</h3>
+<p class="trigger">social listening scan</p>
+<p>A post asking for candidates becomes a drafted response with the post it answers attached. What the tool may do with it depends entirely on the platform, read live from the capability matrix rather than assumed.</p>
+<ul class="variants">
+<li><b>tier 1 platform</b> — send path exists, message goes out on per-message approval</li>
+<li><b>tier 2/3 platform</b> — draft only, cued to you to send by hand regardless of approval</li>
+<li><b>public reply</b> — labelled REPLY, goes up under your name where the whole thread sees it</li>
+</ul>
+</article>
+<article class="demo">
+<h3>Cold pitch to a company with no opening</h3>
+<p class="trigger">reach out to X, or the prospecting cadence on a schedule</p>
+<p>Every claim about their situation traces to a line in that company's own research record, and is framed as a hypothesis rather than an assertion.</p>
+<ul class="variants">
+<li><b>role_fit</b> — "I could do X for you" — familiar, low friction, the default volume</li>
+<li><b>role_creation</b> — asks them to accept a diagnosis of their own business first — deliberately a small minority of weekly volume</li>
+<li><b>wildcard entry used</b> — WILDCARD tag carried through to the the approval message so approval is never given on autopilot</li>
+</ul>
+</article>
+<article class="demo">
+<h3>Finding a real person behind a company name</h3>
+<p class="trigger">company and role known, name and email are not</p>
+<p>Hiring manager first, recruiter-track staged separately and framed differently. Neither is ever asserted with certainty — the output is a confidence-scored hypothesis with its sources attached.</p>
+<ul class="variants">
+<li><b>free cascade only</b> — public sources, self-hosted tools, then rotated free tiers — 325+ lookups a month at zero cost</li>
+<li><b>paid tier reached</b> — asks, with the price, and only if a budget above zero was set</li>
+</ul>
+</article>
+<article class="demo">
+<h3>LinkedIn stranger, connect then message</h3>
+<p class="trigger">target identified on LinkedIn, no existing connection</p>
+<p>Two gates in sequence, and the second cannot fire until the platform prerequisite clears. A drafted message sits below sendable until the connection is actually accepted, no matter how ready it is.</p>
+</article>
+<article class="demo">
+<h3>InMail instead of connect-and-wait</h3>
+<p class="trigger">target worth a metered credit</p>
+<p>Buys skipping the wait, at the cost of a plan-gated credit. One per recipient — no follow-up without a reply. Unavailable until your subscription tier is set, which is the honest default rather than an error.</p>
+</article>
+<article class="demo">
+<h3>Seeding the pitch catalog</h3>
+<p class="trigger">its own dedicated session, never folded into general setup</p>
+<p>A genuinely creative pass, not a checkbox. Stretch entries get a visibly heavier confirmation than held ones — an explicit "you are telling me you can actually deliver this."</p>
+</article>
+</section>
+<section><h2>Interviews and offers</h2><p class="lede">From the invite arriving to the decision.</p>
+<article class="demo">
+<h3>Interview invite to prep brief</h3>
+<p class="trigger">interview_request_at set, by email scan or by you</p>
+<p>Fires on the invite arriving, not on you remembering to ask. Where three likely questions have no story on file, the brief says exactly that rather than filling the space.</p>
+</article>
+<article class="demo">
+<h3>Live practice session</h3>
+<p class="trigger">'quiz me' / 'practise for Thursday'</p>
+<p>The study phase, separate from the build phase. Runs on the deck already built, and works by voice as readily as by text.</p>
+</article>
+<article class="demo">
+<h3>Later round or a changed format</h3>
+<p class="trigger">a later round's details arriving by email</p>
+<p>A second round is a different interview, not the same one again — panel, format and depth all move.</p>
+</article>
+<article class="demo">
+<h3>Offer comparison and decision</h3>
+<p class="trigger">an offer arrives</p>
+<p>The other end of the pipeline and the higher-stakes decision. Built as a workbook you can change the assumptions in, not as prose that argues for an answer.</p>
+</article>
+</section>
+<section><h2>Working out what to aim at</h2><p class="lede">When the question is which job, not which application.</p>
+<article class="demo">
+<h3>Plan a path to a target role</h3>
+<p class="trigger">what would it take to become a X</p>
+<p>Ends in one confirmed target, which then becomes what the whole discovery pipeline runs against. Two hops maximum; a third rests on a profile nobody can predict.</p>
+<ul class="variants">
+<li><b>allow_comp_regression ask</b> — steps that pay less are shown with the reasoning</li>
+<li><b>allow_comp_regression never</b> — silently removes most sector switches and management-track entries</li>
+<li><b>liquidity probe off</b> — taxonomy signals only — a plan can point at a title with no live market</li>
+</ul>
+</article>
+<article class="demo">
+<h3>Build or refresh the interests profile</h3>
+<p class="trigger">setup, or something interest-shaped mentioned in passing</p>
+<p>Recording is free and unrestricted. Whether a sensitive entry ever appears in an outward document is a separate decision, asked at the moment of use, every time.</p>
+</article>
+<article class="demo">
+<h3>Career pulse journal check-in</h3>
+<p class="trigger">journal cadence</p>
+<p>Raw entries are stored immediately; anything that looks like a durable career fact goes through confirmation before it reaches memory. A quantified claim heard in a voice note is read back before it is written.</p>
+</article>
+<article class="demo">
+<h3>Profile monitor picks up a change</h3>
+<p class="trigger">explicit-channel monitor cadence</p>
+<p>Watches the profiles you named. Surfaces, never writes — every candidate fact goes through the same confirmation as one you mentioned yourself.</p>
+</article>
+</section>
+<section><h2>Your public presence</h2><p class="lede">Portfolio, profile, and what you choose to share.</p>
+<article class="demo">
+<h3>Build and publish a portfolio page</h3>
+<p class="trigger">a role asks for a portfolio, or you want a link</p>
+<p>Six blocks, every one drawn from already-confirmed memory. Built locally first — going public is its own decision, made after you have looked at it.</p>
+</article>
+<article class="demo">
+<h3>LinkedIn profile audit and rewrite</h3>
+<p class="trigger">audit my LinkedIn</p>
+<p>Every proposed line traces to the same confirmed material a resume draws on. Approval is per change, because your network sees the edit activity.</p>
+</article>
+<article class="demo">
+<h3>Save a named output template</h3>
+<p class="trigger">always write cover letters for X like this</p>
+<p>The one confirmed-write file that does not route through the memory skill, deliberately — a formatting preference is not a career fact.</p>
+</article>
+<article class="demo">
+<h3>Share an outcome milestone</h3>
+<p class="trigger">response rate crosses 2x your stated baseline over 10+ applications</p>
+<p>Triggered on a personal multiple, not an absolute number, so it means something regardless of your field. Capped at one ask a fortnight and suppressed entirely after two you ignore.</p>
+</article>
+</section>
+<section><h2>How it improves</h2><p class="lede">What changes over time, and what you approve first.</p>
+<article class="demo">
+<h3>Weekly self-improvement review</h3>
+<p class="trigger">Monday morning</p>
+<p>Correlates your tactics against your real outcomes and proposes specific, evidence-backed edits — with the numbers behind each one. Two proposals a week, not eight, because a review that surfaces eight teaches you to approve all of them without reading.</p>
+<ul class="variants">
+<li><b>rotation group released</b> — only this week's group of proposals surfaces, the rest wait with their detection date recorded</li>
+<li><b>effect size grew</b> — a queued proposal is promoted to the next release regardless of its group</li>
+</ul>
+</article>
+<article class="demo">
+<h3>Quarterly optimiser run</h3>
+<p class="trigger">manual, quarterly, never scheduled</p>
+<p>Deliberately manual and deliberately scoped to the three writing skills. The risk gate is excluded — an optimiser whose constraint checks cannot see content is the wrong tool to point at the one skill whose value is being conservative.</p>
+</article>
+<article class="demo">
+<h3>Ghost check and outcome nudge</h3>
+<p class="trigger">daily</p>
+<p>Scans for outcomes first so the daily ask is scoped to what has no email trace at all — a verbal offer from a call, or real silence.</p>
+</article>
+<article class="demo">
+<h3>Pause and resume the search</h3>
+<p class="trigger">pause for two weeks</p>
+<p>Discovery stops. Conversation does not, and the journal keeps running — a pause is about the searching, not about you disappearing.</p>
+</article>
+<article class="demo">
+<h3>Adding a new capability</h3>
+<p class="trigger">can it also do X</p>
+<p>Defaults to writing an addendum rather than rewriting a working file, so hand-tuned behaviour is never silently replaced.</p>
+</article>
+</section>
+<section><h2>When something goes wrong</h2><p class="lede">The situations you will actually hit, and what happens in each.</p>
+<article class="demo">
+<h3>The posting disappeared before approval</h3>
+<p class="trigger">re-verification before the the approval message</p>
+<p>Three signals, and the third catches most real cases: a 404, a page that now says closed, and a redirect to the board index where the fetch succeeds and only the content tells you. A pulled posting is information, not a decision — and it must not count as a non-reply, or every response rate you measure is understated.</p>
+</article>
+<article class="demo">
+<h3>The evidence gate refuses a claim</h3>
+<p class="trigger">a tactic with no supporting line in memory</p>
+<p>The gap goes to a worklist, never into memory as an invented fact. The memory interview picks it up on its next run, which is how a refused claim becomes a real story rather than a permanent blocker.</p>
+</article>
+<article class="demo">
+<h3>Submit blocked by the safety hook</h3>
+<p class="trigger">a submit-shaped click with no approval recorded</p>
+<p>The hook trusts the recorded decision, never the conversation. It fails closed on every branch it can see — and fails open, silently, on any tool name it was never told about, which is why the form is not opened at all until the toolset is confirmed watched.</p>
+</article>
+<article class="demo">
+<h3>Partial install</h3>
+<p class="trigger">an incomplete install</p>
+<p>The worst failure available here is not a crash. It is a skill that reads convincingly with no rules, no database and no profile behind it — which is why this is checked at first run of every session.</p>
+</article>
+<article class="demo">
+<h3>Restore from backup</h3>
+<p class="trigger">data loss or a bad migration</p>
+<p>States what will be overwritten and from when, before it runs. Backups themselves are unattended and need no gate; restores are not and do.</p>
+</article>
+</section>
+<section><h2>What you get asked, and what happens if you stop being asked</h2>
+<p class="lede">Every one of these is a point where the tool stops and waits for you. Each shows what happens either way.</p>
+<h3>Things that cannot be undone</h3><p class="lede">A real thing happens to someone else. You can switch these off, but it takes a deliberate step and it expires.</p>
+<article class="panel"><h4>Submitting a job application</h4>
+<div class="side on"><span>On</span><p>A Product Manager role at Acme is filled in and ready. You get a message with the company, the role, a screenshot of the completed form and the list of claims made. Nothing is sent until you reply approve. If you say nothing, it waits.</p></div>
+<div class="side off"><span>Off</span><p>The same application is submitted the moment it is built — typically within a minute of the posting being found. You find out it went out when it appears in your sent list. If a claim was wrong, it has already reached the employer.</p></div>
+</article>
+<article class="panel"><h4>Sending a direct message</h4>
+<div class="side on"><span>On</span><p>A hiring manager posts that they are hiring. A message is drafted using your pitch catalog and shown to you with the post it responds to. You approve or edit it.</p></div>
+<div class="side off"><span>Off</span><p>The message sends itself. On a platform where automated sending is against the rules, the account carrying that risk is yours, not the tool's.</p></div>
+</article>
+<article class="panel"><h4>Sending a cold email</h4>
+<div class="side on"><span>On</span><p>A pitch to a company you have researched is drafted, with every claim about their situation traced to a line in the research record. You read it before it sends.</p></div>
+<div class="side off"><span>Off</span><p>It sends on the research pass's own schedule. A wrong guess about a company's problems is now something you asserted to them in writing.</p></div>
+</article>
+<article class="panel"><h4>Spending an InMail credit</h4>
+<div class="side on"><span>On</span><p>You are told which of your monthly credits this would use and how many remain, before it goes. One InMail per recipient — there is no follow-up without a reply.</p></div>
+<div class="side off"><span>Off</span><p>Credits are spent as targets are found. A month's allowance can be gone in a day, on recipients you never saw.</p></div>
+</article>
+<article class="panel"><h4>Sending a connection request</h4>
+<div class="side on"><span>On</span><p>Each request is shown with the note attached, then sent at human pace on your own logged-in session.</p></div>
+<div class="side off"><span>Off</span><p>Requests go out in batches. LinkedIn's pattern detection is looking for exactly this shape, and the account it acts against is yours.</p></div>
+</article>
+<article class="panel"><h4>Commenting publicly under your name</h4>
+<div class="side on"><span>On</span><p>A reply to a public thread is drafted and marked as going up publicly, visible to everyone in that thread, before you approve it.</p></div>
+<div class="side off"><span>Off</span><p>Comments post themselves under your name where colleagues and future employers can read them.</p></div>
+</article>
+<article class="panel"><h4>Editing your live LinkedIn profile</h4>
+<div class="side on"><span>On</span><p>Each headline, summary or role change is proposed one at a time with the current text beside the new one.</p></div>
+<div class="side off"><span>Off</span><p>Your public profile is rewritten. Your network sees the edit activity, and so does your current employer.</p></div>
+</article>
+<article class="panel"><h4>Publishing your portfolio page</h4>
+<div class="side on"><span>On</span><p>The page is built locally and you open it before deciding whether it goes to a public address.</p></div>
+<div class="side off"><span>Off</span><p>It publishes on build. Anything drawn from memory that you would not have put on a public page is now on one.</p></div>
+</article>
+<article class="panel"><h4>Posting your results publicly <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>After your sixth interview invite, a short post is drafted in your own writing style with the underlying numbers shown beside it. You edit or discard it.</p></div>
+<div class="side off"><span>Off</span><p>not available — this gate cannot be switched off</p></div>
+</article>
+<article class="panel"><h4>Using sensitive personal information in an outward document <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>A cover letter would mention volunteer work with a religious organisation because it matches the employer's stated values. You are asked, for this one letter, whether to include it.</p></div>
+<div class="side off"><span>Off</span><p>not available — this gate cannot be switched off</p></div>
+</article>
+<article class="panel"><h4>Spending real money on contact lookups</h4>
+<div class="side on"><span>On</span><p>The free cascade runs first — public sources, self-hosted tools, then rotated free tiers, over 325 lookups a month before anything costs money. Only past that are you asked, with the price.</p></div>
+<div class="side off"><span>Off</span><p>Paid lookups run automatically up to your monthly budget. Set the budget before switching this off; the default is zero, which means nothing spends.</p></div>
+</article>
+<h3>Things that reach outside</h3><p class="lede">Undoable or low-stakes. Switch these off freely.</p>
+<article class="panel"><h4>Driving your logged-in browser session</h4>
+<div class="side on"><span>On</span><p>You are told each time the tool needs to act inside a site you are logged into.</p></div>
+<div class="side off"><span>Off</span><p>It uses your session when it needs to, without saying so each time.</p></div>
+</article>
+<article class="panel"><h4>Reading your email for application outcomes</h4>
+<div class="side on"><span>On</span><p>You confirm each scan. Slower, and outcomes get logged later than they happened.</p></div>
+<div class="side off"><span>Off</span><p>Rejections and interview invites are detected and logged automatically, so the daily nudge only asks about applications with no email trace at all.</p></div>
+</article>
+<article class="panel"><h4>Creating calendar events</h4>
+<div class="side on"><span>On</span><p>An interview is confirmed for Thursday; you are asked before a prep block goes on your calendar.</p></div>
+<div class="side off"><span>Off</span><p>Prep blocks appear automatically. Anyone who can see your calendar can see them.</p></div>
+</article>
+<article class="panel"><h4>Fetching company and person research</h4>
+<div class="side on"><span>On</span><p>You approve each research pass. Applications wait on you.</p></div>
+<div class="side off"><span>Off</span><p>Research runs and caches per company, feeding the resume, letter and interview prep.</p></div>
+</article>
+<article class="panel"><h4>Free-tier contact lookups</h4>
+<div class="side on"><span>On</span><p>You approve each lookup.</p></div>
+<div class="side off"><span>Off</span><p>The free cascade runs automatically. No money moves — that is a separate gate.</p></div>
+</article>
+<article class="panel"><h4>Polling social platforms for opportunities</h4>
+<div class="side on"><span>On</span><p>Listening runs only when you ask.</p></div>
+<div class="side off"><span>Off</span><p>Scheduled low-frequency scans surface posts worth replying to.</p></div>
+</article>
+<article class="panel"><h4>Connecting a provider API key <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>You connect a key deliberately, once, and it is read from your vault at the point of use.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+<h3>Things that change your own setup</h3><p class="lede">Writes to your own files and memory.</p>
+<article class="panel"><h4>Storing a new fact about your career</h4>
+<div class="side on"><span>On</span><p>A story you tell in passing is read back to you before it is stored, so a detail you misremembered does not become the version used in every future application.</p></div>
+<div class="side off"><span>Off</span><p>Facts are inferred and stored silently. A wrong figure propagates into resumes and interview answers until you notice it.</p></div>
+</article>
+<article class="panel"><h4>Adding a story to your example bank</h4>
+<div class="side on"><span>On</span><p>A story with an unresolved number is either given the number or explicitly marked as having none, before it is saved.</p></div>
+<div class="side off"><span>Off</span><p>Stories are written as told, gaps included. An interview answer later relies on a figure nobody checked.</p></div>
+</article>
+<article class="panel"><h4>Confirming numbers from voice notes</h4>
+<div class="side on"><span>On</span><p>You say "25% growth over six months" and it is read back as text before anything is written.</p></div>
+<div class="side off"><span>Off</span><p>A transcription of "25" heard as "225" is stored as a fact and appears on your resume.</p></div>
+</article>
+<article class="panel"><h4>Resolving contradictory facts</h4>
+<div class="side on"><span>On</span><p>Two different team sizes for the same project are shown side by side and you say which is right.</p></div>
+<div class="side off"><span>Off</span><p>The newer one wins silently. Both versions may already have gone out to different employers.</p></div>
+</article>
+<article class="panel"><h4>Changing your target role and constraints</h4>
+<div class="side on"><span>On</span><p>A suggestion to widen your search to adjacent titles is proposed and you accept or decline it.</p></div>
+<div class="side off"><span>Off</span><p>The search target drifts on its own. You start seeing roles you would not have chosen.</p></div>
+</article>
+<article class="panel"><h4>Changing how strictly claims must be evidenced <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>strict — every claim cites a specific line in your resume, portfolio or story bank. Where no evidence exists the tactic is dropped and the gap is flagged to you.</p></div>
+<div class="side off"><span>Off</span><p>embellish — claims may be extended past what the evidence states. What goes out is something you may have to defend in an interview without anything on file behind it.</p></div>
+</article>
+<article class="panel"><h4>Saving a named output format</h4>
+<div class="side on"><span>On</span><p>A structure you asked for once is confirmed before it becomes the default for that output type.</p></div>
+<div class="side off"><span>Off</span><p>Formats are saved as inferred. Later outputs follow a shape you never chose.</p></div>
+</article>
+<article class="panel"><h4>Confirming a service you can deliver</h4>
+<div class="side on"><span>On</span><p>Each catalog entry is confirmed with its evidence before it can appear in a pitch.</p></div>
+<div class="side off"><span>Off</span><p>Entries are inferred from your history. A pitch offers something you would rather not have promised.</p></div>
+</article>
+<article class="panel"><h4>Confirming a stretch offer <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>A stretch capability is confirmed separately, in its own conversation, and tagged wherever it is used.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+<article class="panel"><h4>Changing match-score thresholds</h4>
+<div class="side on"><span>On</span><p>You approve each threshold change.</p></div>
+<div class="side off"><span>Off</span><p>Thresholds adjust to what is actually landing responses. Ships at 70 minimum, 50 stretch — 55/35 if you are starting out.</p></div>
+</article>
+<article class="panel"><h4>Changing your daily volume cap <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>A change to how many applications get built per day is your decision.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+<article class="panel"><h4>Pausing and resuming the pipeline <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>Pausing and resuming are always your call, and a pause has a visible expiry.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+<article class="panel"><h4>Applying a change the tool proposes to itself</h4>
+<div class="side on"><span>On</span><p>"Values-alignment section shows no response-rate difference over 40 applications — recommend making it optional." You read the proposed edit and the numbers behind it before it takes effect.</p></div>
+<div class="side off"><span>Off</span><p>The tool rewrites its own instructions weekly on its own evidence. When output quality changes you will not know which edit did it.</p></div>
+</article>
+<article class="panel"><h4>Applying an optimiser-evolved skill <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>An evolved version is produced as a file to diff and read. You apply it by hand or not at all.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+<article class="panel"><h4>Adding a new capability to the tool <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>A new capability is drafted and shown to you before it is installed.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+<article class="panel"><h4>Restoring from a backup <span class="lock">always on</span></h4>
+<div class="side on"><span>On</span><p>A restore states what will be overwritten and from which date before it runs.</p></div>
+<div class="side off"><span>Off</span><p>not available</p></div>
+</article>
+</section>
+<section><h2>Settings</h2>
+<h3>Simple</h3><p class="lede">Asked during setup. The tool cannot work without these.</p>
+<article class="panel"><h4>Whether you have prior work history</h4>
+<div class="side on"><span>Default</span><p>Asked before anything else. It routes the whole first session and pre-sets your match thresholds — 55/35 instead of 70/50 if you are starting out, because entry-level postings systematically overstate their own requirements.</p></div>
+<div class="side off"><span>Changed</span><p>Assumed experienced. Someone with no work history gets a search tuned for someone who has one, and sees almost nothing.</p></div>
+</article>
+<article class="panel"><h4>Your seniority level</h4>
+<div class="side on"><span>Default</span><p>Postings are filtered to your band before anything else runs, so the pipeline spends its daily budget on roles you could take.</p></div>
+<div class="side off"><span>Changed</span><p>Nothing downstream can filter. Graduate roles and director roles arrive in the same queue.</p></div>
+</article>
+<article class="panel"><h4>Where you will work</h4>
+<div class="side on"><span>Default</span><p>Remote, hybrid, onsite, countries and cities are all separate answers, so 'remote anywhere' and 'hybrid in Lagos only' filter differently.</p></div>
+<div class="side off"><span>Changed</span><p>Every posting passes the location filter, including ones you could never take.</p></div>
+</article>
+<article class="panel"><h4>Your minimum acceptable pay</h4>
+<div class="side on"><span>Default</span><p>Postings below your floor are dropped before they cost you a review. 'No floor set yet' is a valid, working answer.</p></div>
+<div class="side off"><span>Changed</span><p>You review applications for roles that could never pay enough, and find out at offer stage.</p></div>
+</article>
+<article class="panel"><h4>How strictly claims must be evidenced</h4>
+<div class="side on"><span>Default</span><p>strict — every claim cites a line in your resume, portfolio or story bank. No evidence means the tactic is dropped and the gap flagged to you.</p></div>
+<div class="side off"><span>Changed</span><p>embellish — unsupported claims still go out, logged for the audit trail but not held up for review. You may have to defend them in an interview with nothing on file.</p></div>
+</article>
+<article class="panel"><h4>How widely to search</h4>
+<div class="side on"><span>Default</span><p>poll_only — only the sources you configured. Predictable, cheap, and misses anything not on those boards.</p></div>
+<div class="side off"><span>Changed</span><p>open_web — adds a broader web sweep on a slower cadence. More coverage, more noise, more cost per day.</p></div>
+</article>
+<article class="panel"><h4>Job titles to search for</h4>
+<div class="side on"><span>Default</span><p>You confirm each variant. Titles you actually held are suggested automatically; adjacent titles the taxonomy proposes are shown with the evidence behind them.</p></div>
+<div class="side off"><span>Changed</span><p>Nothing to search for. Discovery returns nothing at all until at least one title exists.</p></div>
+</article>
+<h3>Advanced</h3><p class="lede">Sensible defaults already. Change them when you have a reason.</p>
+<article class="panel"><h4>Whether you need visa sponsorship</h4>
+<div class="side on"><span>Default</span><p>Roles that explicitly cannot sponsor are filtered out.</p></div>
+<div class="side off"><span>Changed</span><p>Unset by default, and nothing filters on it. You apply to roles that will reject you at the first screening question.</p></div>
+</article>
+<article class="panel"><h4>Industries to never show you</h4>
+<div class="side on"><span>Default</span><p>Named industries never reach your queue.</p></div>
+<div class="side off"><span>Changed</span><p>Empty is the normal state. Everything is considered.</p></div>
+</article>
+<article class="panel"><h4>Companies to never apply to</h4>
+<div class="side on"><span>Default</span><p>Your current employer, or anywhere you have decided against, never appears.</p></div>
+<div class="side off"><span>Changed</span><p>Empty is the normal state.</p></div>
+</article>
+<article class="panel"><h4>How many applications to prepare per day</h4>
+<div class="side on"><span>Default</span><p>starter — 15 a day. Enough for one person's active search, and a number you can actually review.</p></div>
+<div class="side off"><span>Changed</span><p>max — 200 a day. Your own review throughput becomes the bottleneck, not the pipeline. Nothing sends itself at any tier.</p></div>
+</article>
+<article class="panel"><h4>Whether match thresholds may adjust themselves</h4>
+<div class="side on"><span>Default</span><p>hybrid — the maths runs on schedule, each proposed change is staged, and it only takes effect once you approve it.</p></div>
+<div class="side off"><span>Changed</span><p>auto — thresholds move on their own, logged but not approved. Your bar drifts and you find out from the results.</p></div>
+</article>
+<article class="panel"><h4>Minimum match score to stage an application</h4>
+<div class="side on"><span>Default</span><p>70 by default, 55 if you are starting out. Below it, nothing is staged.</p></div>
+<div class="side off"><span>Changed</span><p>Lower it and you review more, weaker matches. Raise it and a thin market produces an empty queue.</p></div>
+</article>
+<article class="panel"><h4>Stretch band floor</h4>
+<div class="side on"><span>Default</span><p>50-70 is the stretch band: staged, and tagged STRETCH in the the approval message so you know it is a reach before you approve.</p></div>
+<div class="side off"><span>Changed</span><p>Disable stretch and you only ever see comfortable matches. Most step-up roles live in this band.</p></div>
+</article>
+<article class="panel"><h4>How far below your level to consider</h4>
+<div class="side on"><span>Default</span><p>balanced — title-seniority and compensation deltas are weighed as two separate axes.</p></div>
+<div class="side off"><span>Changed</span><p>relaxed — roles well below your level reach the queue. Sometimes right in a bad market, expensive in attention otherwise.</p></div>
+</article>
+<article class="panel"><h4>Whether you are currently employed</h4>
+<div class="side on"><span>Default</span><p>Urgency and volume adapt. Being between roles changes what a sensible daily target is.</p></div>
+<div class="side off"><span>Changed</span><p>unspecified — the pipeline runs at a neutral pace regardless of how urgent your search actually is.</p></div>
+</article>
+<article class="panel"><h4>How many career moves a plan may span</h4>
+<div class="side on"><span>Default</span><p>Two hops. A third rests on a profile nobody can predict, and the re-plan rule would regenerate it anyway.</p></div>
+<div class="side off"><span>Changed</span><p>Longer plans read as forecasts. They look impressive and the later hops are fiction.</p></div>
+</article>
+<article class="panel"><h4>Whether a plan may include a pay cut</h4>
+<div class="side on"><span>Default</span><p>ask — a step that pays less is shown to you with the reasoning rather than hidden.</p></div>
+<div class="side off"><span>Changed</span><p>never — silently removes most sector switches and management-track entries. A default that hides options is worse than one that asks.</p></div>
+</article>
+<article class="panel"><h4>Check live demand for a planned role</h4>
+<div class="side on"><span>Default</span><p>A read-only census of live postings across your sources over 90 days. Queues nothing.</p></div>
+<div class="side off"><span>Changed</span><p>Falls back to taxonomy signals only. A plan can point at a title with no live market.</p></div>
+</article>
+<article class="panel"><h4>Monthly budget for paid contact lookups</h4>
+<div class="side on"><span>Default</span><p>Zero. The free cascade covers 325+ lookups a month before anything could cost money.</p></div>
+<div class="side off"><span>Changed</span><p>Set a figure and paid lookups run automatically up to it, without asking each time.</p></div>
+</article>
+<article class="panel"><h4>Your LinkedIn subscription tier</h4>
+<div class="side on"><span>Default</span><p>Sets your monthly InMail allowance so the tool knows what it is spending.</p></div>
+<div class="side off"><span>Changed</span><p>Unset, and InMail routing is simply unavailable — every stranger routes through connect-and-wait instead. Not an error state, the honest default.</p></div>
+</article>
+<article class="panel"><h4>Domains to skip in open-web search</h4>
+<div class="side on"><span>Default</span><p>Aggregator sites that republish the same postings stop cluttering the queue.</p></div>
+<div class="side off"><span>Changed</span><p>Empty. Open-web mode surfaces duplicates from scraper sites.</p></div>
+</article>
+</section>
+</div></body></html>

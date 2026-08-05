@@ -1,0 +1,124 @@
+# shared/dynamic-target-calibration.yaml — governs how strict/loose the
+# pipeline is about what counts as "worth staging," and how that
+# strictness is allowed to move over time. Consumed by 01-job-discovery
+# (title/variant breadth), 03-resume-match (min/stretch score gates), and
+# 07-context-architect (how aggressively Phase 1.5 proposes adjacent or
+# higher-seniority titles). Copy this template to
+# dynamic-target-calibration.yaml, confirmed the same way every other
+# target-profile fact is (07-context-architect, Rule 5) — never
+# hand-edit directly for the same reason target-profile.yaml itself isn't
+# hand-edited.
+#
+# Two things are deliberately kept separate here, on purpose — see
+# dynamic-target-calibration.md's "why match_score isn't a policy lever"
+# section for the full reasoning:
+#   - match_score itself is NEVER set or nudged by anything in this file.
+#     03-resume-match computes it fresh every time, comparing the CURRENT
+#     profile against each JD. It rises on its own as the profile
+#     genuinely strengthens.
+#   - Everything below IS a policy lever: where the bar sits, and whether
+#     the system may move that bar on its own.
+
+calibration_mode: "hybrid"   # manual | auto | hybrid
+#   manual - only Kene's own confirmed edits move anything below. Nothing
+#            here changes on its own, ever.
+#   auto   - the system recalculates thresholds on the schedule below and
+#            applies them directly, logged for audit but not gated on
+#            approval.
+#   hybrid - (recommended; the only mode this template ships enabled)
+#            the system recalculates on schedule, but every proposed
+#            change is staged into skill_self_edits — the exact same
+#            table/pattern 11-analytics-and-learning already uses for its
+#            own proposed skill edits — and only takes effect once Kene
+#            approves it. Auto's math, manual's control.
+
+match_score:
+  minimum: 70          # applications scoring below this are not staged
+                        # — pre-set to 55 instead when target-profile.yaml's
+                        # profile_stage is first_time (see onboarding/
+                        # onboarding/references/starting-out-track.md): entry-level
+                        # postings are well-documented to overstate their
+                        # own requirements, so the same 70 default would
+                        # systematically over-filter this profile stage
+                        # for reasons that have nothing to do with actual
+                        # fit. Set once at onboarding from that flag, not
+                        # a second question asked here.
+  stretch:
+    enabled: true
+    floor: 50           # 50-70 = stretch band: staged, flagged [STRETCH]
+                          # in the Telegram approval message so Kene knows
+                          # it's a reach before tapping approve
+                          # — pre-set to 35 for profile_stage: first_time,
+                          # same reasoning as minimum above.
+
+overqualification_tolerance: "balanced"   # strict | balanced | relaxed
+  # Mirrors target-profile.yaml's fidelity_mode 3-tier pattern on purpose,
+  # for consistency. See dynamic-target-calibration.md's "Overqualification
+  # score" section for exactly what's measured (title-seniority delta and
+  # compensation delta, kept as two separate axes) and what each tier
+  # allows through.
+
+employment_status: "unspecified"
+  # employed | unemployed | between_roles | freelance_between_contracts |
+  # unspecified
+  # Written by 16-career-pulse's periodic check-in, confirmed by Kene the
+  # same way every other memory fact is (Rule 5) — never inferred and
+  # silently written, regardless of how strong the soft signals look.
+status_changed_at: null
+
+auto_relax_schedule:
+  # Only consulted when calibration_mode is auto or hybrid, and only once
+  # employment_status is unemployed or between_roles (an employed person's
+  # thresholds don't drift on a timer — see the .md file for why). Each
+  # step is additive from the baseline values above, not compounding on
+  # top of the previous step — see the .md file's worked example.
+  - after_weeks: 8
+    match_score_minimum_delta: -5
+    stretch_floor_delta: -5
+    overqualification_tolerance: "balanced"
+  - after_weeks: 16
+    match_score_minimum_delta: -10
+    stretch_floor_delta: -10
+    overqualification_tolerance: "relaxed"
+  - after_weeks: 26
+    match_score_minimum_delta: -15
+    stretch_floor_delta: -15
+    overqualification_tolerance: "relaxed"
+    also_widen_title_taxonomy_similarity_threshold: true
+      # per dynamic-target-calibration.md — at this point widen which
+      # adjacent titles Phase 1.5 surfaces at all, not just how low a
+      # score on the same titles is accepted
+  - after_weeks: 78   # ~18 months — a genuine long-gap case (care
+                        # responsibilities, recovery, other reasons),
+                        # not "still searching the same lane a while
+                        # longer." See onboarding/references/
+                        # starting-out-track.md's note on this tier.
+    match_score_minimum_delta: -15   # no further delta from the 26-week
+                                       # step — see the note below on why
+    stretch_floor_delta: -15
+    overqualification_tolerance: "relaxed"
+    also_widen_title_taxonomy_similarity_threshold: true
+    note: "Not a further numeric relax past the 26-week step on
+      purpose — a multi-year gap doesn't mean the same lane needs an
+      even wider net, it means the profile's own currency is worth a
+      fresh look. At this tier, prompt Kene directly on whether
+      recently-updated evidence (16-career-pulse journal entries,
+      any new skill/project since the gap) should get weighted above
+      pre-gap material in scoring, rather than just widening the
+      numeric gates further. See starting-out-track.md."
+
+# Every recalibration this file has gone through, most recent last —
+# lightweight audit trail, separate from skill_self_edits' own approval
+# record so the current effective values are readable at a glance without
+# joining against the DB.
+recalibration_log: []
+  # - at: ""
+  #   reason: ""              # e.g. "8-week auto-relax, mode: hybrid,
+  #                            #      approved via skill_self_edits #NN"
+  #                            #   or "manual edit via context-architect"
+  #   match_score_minimum: null
+  #   stretch_floor: null
+  #   overqualification_tolerance: ""
+
+last_recalibrated_at: null
+last_confirmed_at: null

@@ -1,0 +1,105 @@
+# shared/pitch-catalog.yaml — the confirmed set of "sellable units"
+# 17-cold-prospecting draws from when drafting any pitch. Never edited by
+# hand and never written to directly by any skill — entries start as
+# Hermes-proposed candidates (drawn from the full memory bank: STAR
+# stories, domain-knowledge, project history) and only become usable
+# once confirmed through 07-context-architect's normal interview, same
+# Rule 5 discipline as target-profile.yaml itself.
+#
+# Copy pitch-catalog.yaml.template to pitch-catalog.yaml, then let
+# 07-context-architect seed it — don't hand-fill the template.
+#
+# See shared/pitch-catalog.md for the full reasoning on why entries are
+# built once and reused, rather than generated fresh per pitch.
+#
+# target_customer_profile is a structured block, not a one-line string
+# — see 17-cold-prospecting/references/ideal-client-persona.md for the
+# full schema and how each field actually gets populated (Hermes
+# proposes, segment-research.md grounds the sourced fields, Kene
+# confirms). One persona per catalog entry — Kene has multiple sellable
+# units, and they don't share a buyer.
+
+entries:
+  # --- Example entries below, illustrating the three categories.
+  # --- Delete before real use; these are not real Kene data.
+
+  - id: "example-held-01"
+    category: "held"          # held | adjacent | wildcard
+    title: "AI Product Manager / generalist technical contractor"
+    pitch_type: ["role_fit", "service"]
+    one_line_pitch: >
+      Freelance AI PM and developer who scopes, builds, and ships
+      product end to end — not just specs it.
+    evidence:
+      - "domain-knowledge.md#ai-pm-contracting"
+      - "star-story-bank.md#solarone-migration"
+    target_customer_profile:
+      summary: >
+        Small-to-mid teams that need one person to own an AI feature or
+        product surface from spec through shipped code, not a full team.
+      persona:
+        who: "solo founder or 2-3 person team shipping a first AI
+          feature, no dedicated AI PM on staff"
+        company_context: "pre-seed to Series A, 2-15 people, technical
+          co-founder exists but is stretched across everything"
+        stated_pains: []            # populated from segment-research.md
+                                      # once a corroborated pattern
+                                      # exists — empty is the honest
+                                      # default until then
+        buying_trigger: "n/a — no reliable trigger signal identified
+          yet, treat as always-relevant"
+        likely_objection: "can probably just have the technical
+          co-founder do this themselves, slower"
+        where_they_are: ["x", "linkedin"]
+        language_they_use: []       # same rule as stated_pains
+      built_at: null
+      built_from: "hermes_proposed"
+      confirmed_at: null
+    rate_or_terms: ""            # e.g. project-based, hourly, retainer
+    status: "active"
+    confirmed_at: null
+
+  # --- This entry deliberately keeps the old flat-string shape, to
+  # --- show it still works untouched — see ideal-client-persona.md's
+  # --- "existing entries... keep working" note. Upgrade to the full
+  # --- persona block next time this entry gets touched, not in a
+  # --- forced batch migration.
+  - id: "example-adjacent-01"
+    category: "adjacent"
+    title: "Job-application automation build"
+    pitch_type: ["service", "role_creation"]
+    one_line_pitch: >
+      Builds the exact kind of discovery-to-application automation
+      pipeline this skill itself is part of — for someone else's use
+      case, not just his own job search.
+    evidence:
+      - "domain-knowledge.md#job-hunting-pipeline-build"
+    target_customer_profile: >
+      Recruiting agencies, career coaches, or anyone running high-volume
+      structured outreach who'd benefit from the same architecture.
+    rate_or_terms: ""
+    status: "active"
+    confirmed_at: null
+
+  - id: "example-wildcard-01"
+    category: "wildcard"       # zero grounding in the tracked memory
+                                 # bank on purpose — see pitch-catalog.md
+    title: "[placeholder — a real wildcard entry names a skill genuinely
+      untracked anywhere else in this pipeline]"
+    pitch_type: ["service"]
+    one_line_pitch: ""
+    evidence: []                 # deliberately empty — cannot be
+                                   # fidelity-checked algorithmically;
+                                   # see the heavier confirmation note in
+                                   # 17-cold-prospecting/SKILL.md
+    target_customer_profile: ""
+    rate_or_terms: ""
+    status: "active"
+    confirmed_at: null
+    wildcard_confirmed_explicitly: false   # must be true, set only via
+                                             # the distinct heavier
+                                             # confirmation step, before
+                                             # this entry can be used in
+                                             # any drafted pitch
+
+last_reviewed_at: null

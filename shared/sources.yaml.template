@@ -1,0 +1,143 @@
+# shared/sources.yaml — loaded by 01-job-discovery at the start of every
+# discovery run. Nothing here is auto-generated on first install; this
+# file starts empty and grows every time a new source is onboarded (see
+# "Onboarding a new source" below). Each entry records two things:
+#
+#   1. How to reach the source.
+#   2. How to read ITS posting-date, specifically — every source labels
+#      and formats "when this was posted" differently, so posted_at can't
+#      be populated by one generic rule (see 01-job-discovery/SKILL.md,
+#      "Check posted_at against now").
+#
+# discovery_mode itself lives in shared/target-profile.yaml (confirmed
+# there, same as every other target-profile fact) — this file only
+# CONSUMES that value, it isn't the source of truth for it. Don't set it
+# here too; that'd be two places that could disagree.
+#
+#   poll_only          - only the sources declared below, every 3h tick.
+#   open_web            - poll_only PLUS the open_web_search source(s)
+#                         below, run on THEIR OWN cadence (see that
+#                         source type — daily by default, not every tick).
+#   open_web_excluding  - same as open_web, minus exclude_domains below.
+#
+# exclude_domains only takes effect in open_web_excluding mode — it's
+# read by 01-job-discovery, not by open_web_search sources directly, so
+# it applies uniformly across every open-web sweep regardless of how many
+# open_web_search entries exist.
+exclude_domains: []
+  # - "somecompany.com"      # e.g. a past employer, or a board Kene
+  #                           # explicitly doesn't want surfaced
+
+sources:
+
+  - id: linkedin-example
+    type: linkedin_search_url   # linkedin_search_url | indeed_search_url | rss | email_label | google_dork | scrape_and_filter | export_file | aggregator_api | open_web_search |
+                            # social_listening (requires capability:social_listening
+                            # — skipped with a notice when unavailable)
+    url: "https://www.linkedin.com/jobs/search/?keywords=REPLACE&f_TPR=r10800&sortBy=DD"
+    # url is a TEMPLATE — 01-job-discovery fills keywords/location/f_WT etc.
+    # from shared/target-profile.yaml at run time. Don't hand-fill it per
+    # run; hand-fill it once here as a pattern.
+    posted_at:
+      method: relative_text_on_page   # see method list below
+      notes: >
+        LinkedIn shows a relative string ("2 hours ago") on each card, not
+        an absolute timestamp. Resolve it against fetch time, and keep the
+        original string in posted_at_raw for auditability.
+
+  - id: greenhouse-dork-example
+    type: google_dork
+    query: 'site:job-boards.greenhouse.io "REPLACE_TITLE" ("Worldwide" OR "Remote")'
+    posted_at:
+      method: none_available
+      notes: >
+        The rendered page usually shows no visible posting date — but
+        check for schema.org JobPosting JSON-LD in the page source before
+        falling back (see json_ld_dateposted below); Greenhouse-hosted
+        pages often carry it even when nothing is visibly displayed to a
+        human reader, since it's there for Google for Jobs indexing, not
+        for the page's own UI.
+
+  - id: rss-example
+    type: rss
+    url: ""
+    posted_at:
+      method: rss_pubdate
+      notes: "Standard <pubDate>, RFC-822 — the one reliably parseable case."
+
+  - id: email-alerts-example
+    type: email_label
+    handle: "JobHunt"   # the Gmail label the recruiter/job-alert filter
+                        # routes mail into — that filter is a one-time
+                        # manual setup in Gmail's own web UI (see
+                        # security/email-integration-setup.md), not
+                        # something a skill creates. Requires Hermes's
+                        # bundled himalaya email skill configured first —
+                        # a Gmail App Password, no Google Cloud project.
+                        # 01-job-discovery's "Reading an email_label
+                        # source" step covers how it's read.
+    posted_at:
+      method: email_receipt_time
+      notes: "Proxy for posting time, not exact — usually close enough."
+
+  - id: adzuna-aggregator-example
+    type: aggregator_api
+    provider: adzuna   # free tier, ~1,000 calls/month, 16 countries —
+                        # structured JD text + salary + date from ONE API
+                        # instead of scraping many boards individually.
+                        # Needs ADZUNA_APP_ID / ADZUNA_APP_KEY (free
+                        # signup: developer.adzuna.com). This is the
+                        # "broad coverage without open-web's cost/
+                        # reliability problems" middle ground — prefer
+                        # this over open_web_search for any country
+                        # Adzuna actually covers.
+    countries: ["us", "gb"]
+    posted_at:
+      method: aggregator_field   # Adzuna returns a structured `created` field
+      notes: "Structured and reliable — this is the source type where posted_at is least likely to be a guess."
+
+  - id: open-web-sweep-example
+    type: open_web_search
+    cadence: daily   # NOT every 3h tick — see 01-job-discovery/SKILL.md's
+                     # "Discovery modes" section for the full cost/
+                     # consistency reasoning behind running this slower.
+    platform_dorks: true   # auto-generate one query per known ATS
+                            # platform (Greenhouse, Lever, Ashby, Workday,
+                            # SmartRecruiters, iCIMS — same platform list
+                            # 07-context-architect/references/question-bank-pipeline.md already
+                            # vetted for the question-bank crawl) PLUS one
+                            # generic open query, all built from
+                            # target-profile.yaml's title_variants and
+                            # locations at run time — nothing to hand-fill.
+    posted_at:
+      method: fallback_chain
+      notes: >
+        Freeform pages rarely carry a clean date. Try, in order: (1)
+        schema.org JobPosting JSON-LD `datePosted` in the page source —
+        present on the large majority of postings, since Google requires
+        it for Google for Jobs eligibility, whether or not the rendered
+        page shows a date to a human; (2) any platform-specific field
+        already known from a declared source of the same platform, if one
+        exists; (3) relative_text_on_page; (4) none_available, falling
+        back to discovered_at. Always keep posted_at_raw and record which
+        rung of the chain resolved it, same audit discipline as every
+        other source.
+
+# posted_at.method values:
+#   relative_text_on_page | rss_pubdate | json_ld_dateposted
+#   | email_receipt_time | aggregator_field | fallback_chain | none_available
+
+## Onboarding a new source
+# 1. Add an entry above with `type` + `url`/`handle`.
+# 2. If the source needs a query built from the target profile
+#    (linkedin_search_url, indeed_search_url, google_dork), only the
+#    TEMPLATE shape needs to be written here — 01-job-discovery fills it
+#    from shared/target-profile.yaml at run time.
+# 3. If the source's structure is unfamiliar, run discovery once
+#    interactively first ("onboard this new source: <url>") so it can
+#    inspect the page/feed, propose the entry above, and get confirmation
+#    before it's saved. Do this once per source, not every cron tick —
+#    the saved entry is what makes every later tick cheap.
+# 4. open_web_search and aggregator_api sources don't need step 3 the same
+#    way — there's no single page/feed shape to inspect, since they query
+#    broadly at run time. Onboarding these is just adding the entry.

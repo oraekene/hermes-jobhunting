@@ -1,0 +1,431 @@
+meta:
+  version: 1
+  config_files: 11
+  keys_found: 111
+  user_facing: 22
+  auto_managed: 28
+  panel_schema: shared with gates.yaml — panel.when_on / panel.when_off
+  tiers:
+    SIMPLE: the pipeline cannot produce a staged application without it
+    ADVANCED: has a working default, or only matters once one feature is used
+    AUTO: written by the tool, never asked
+settings:
+- id: SET-PROFILE-STAGE
+  key: profile_stage
+  label: Whether you have prior work history
+  tier: SIMPLE
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: experienced
+  readers: []
+  panel:
+    when_on: Asked before anything else. It routes the whole first session and pre-sets your
+      match thresholds — 55/35 instead of 70/50 if you are starting out, because entry-level
+      postings systematically overstate their own requirements.
+    when_off: Assumed experienced. Someone with no work history gets a search tuned for someone
+      who has one, and sees almost nothing.
+  values:
+  - experienced
+  - first_time
+  status: MISSING FROM CONFIG FILE
+  status_note: Read by 8 skills and asked first at onboarding, but no field exists in the
+    shipped template. Add it.
+- id: SET-SENIORITY-BAND
+  key: seniority_band
+  label: Your seniority level
+  tier: SIMPLE
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: ''
+  readers:
+  - 01-job-discovery
+  panel:
+    when_on: Postings are filtered to your band before anything else runs, so the pipeline
+      spends its daily budget on roles you could take.
+    when_off: Nothing downstream can filter. Graduate roles and director roles arrive in the
+      same queue.
+- id: SET-LOCATIONS
+  key: locations
+  label: Where you will work
+  tier: SIMPLE
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: null
+  readers:
+  - 01-job-discovery
+  - 07-context-architect
+  - HERMES_UPGRADE_CHANGELOG.md
+  panel:
+    when_on: Remote, hybrid, onsite, countries and cities are all separate answers, so 'remote
+      anywhere' and 'hybrid in Lagos only' filter differently.
+    when_off: Every posting passes the location filter, including ones you could never take.
+- id: SET-SALARY-FLOOR
+  key: salary_floor
+  label: Your minimum acceptable pay
+  tier: SIMPLE
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: null
+  readers:
+  - 00-orchestrator
+  - 01-job-discovery
+  - 03-resume-match
+  - 10-approval-and-submit
+  - 19-career-path-planner
+  - ADDENDUM-CHANGELOG.md
+  - shared
+  panel:
+    when_on: Postings below your floor are dropped before they cost you a review. 'No floor
+      set yet' is a valid, working answer.
+    when_off: You review applications for roles that could never pay enough, and find out
+      at offer stage.
+- id: SET-VISA-SPONSORSHIP-REQUIRED
+  key: visa_sponsorship_required
+  label: Whether you need visa sponsorship
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: null
+  readers:
+  - 01-job-discovery
+  - ADDENDUM-CHANGELOG.md
+  - shared
+  panel:
+    when_on: Roles that explicitly cannot sponsor are filtered out.
+    when_off: Unset by default, and nothing filters on it. You apply to roles that will reject
+      you at the first screening question.
+- id: SET-FIDELITY-MODE
+  key: fidelity_mode
+  label: How strictly claims must be evidenced
+  tier: SIMPLE
+  gate: GATE-FIDELITY-MODE
+  file: shared/target-profile.yaml
+  default: strict
+  readers:
+  - 07-context-architect
+  - 09-risk-tactics-gate
+  - README.md
+  - onboarding
+  - shared
+  - templates
+  panel:
+    when_on: strict — every claim cites a line in your resume, portfolio or story bank. No
+      evidence means the tactic is dropped and the gap flagged to you.
+    when_off: embellish — unsupported claims still go out, logged for the audit trail but
+      not held up for review. You may have to defend them in an interview with nothing on
+      file.
+  values:
+  - strict
+  - balanced
+  - embellish
+- id: SET-DISCOVERY-MODE
+  key: discovery_mode
+  label: How widely to search
+  tier: SIMPLE
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: poll_only
+  readers:
+  - 01-job-discovery
+  - 07-context-architect
+  - README.md
+  - cron
+  - onboarding
+  panel:
+    when_on: poll_only — only the sources you configured. Predictable, cheap, and misses anything
+      not on those boards.
+    when_off: open_web — adds a broader web sweep on a slower cadence. More coverage, more
+      noise, more cost per day.
+  values:
+  - poll_only
+  - open_web
+  - open_web_excluding
+- id: SET-TITLE-VARIANTS
+  key: title_variants
+  label: Job titles to search for
+  tier: SIMPLE
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: []
+  readers:
+  - 01-job-discovery
+  - 07-context-architect
+  - 17-cold-prospecting
+  - 19-career-path-planner
+  - ADDENDUM-CHANGELOG.md
+  - README.md
+  - cron
+  - onboarding
+  - shared
+  panel:
+    when_on: You confirm each variant. Titles you actually held are suggested automatically;
+      adjacent titles the taxonomy proposes are shown with the evidence behind them.
+    when_off: Nothing to search for. Discovery returns nothing at all until at least one title
+      exists.
+- id: SET-INDUSTRIES-EXCLUDE
+  key: industries_exclude
+  label: Industries to never show you
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: []
+  readers: []
+  panel:
+    when_on: Named industries never reach your queue.
+    when_off: Empty is the normal state. Everything is considered.
+  status: NO READER FOUND
+  status_note: Present in the config file and documented, but no live skill or reference names
+    it. Verify the filter actually applies it.
+- id: SET-COMPANIES-EXCLUDE
+  key: companies_exclude
+  label: Companies to never apply to
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: []
+  readers: []
+  panel:
+    when_on: Your current employer, or anywhere you have decided against, never appears.
+    when_off: Empty is the normal state.
+  status: NO READER FOUND
+  status_note: Present in the config file and documented, but no live skill or reference names
+    it. Verify the filter actually applies it.
+- id: SET-ACTIVE-TIER
+  key: active_tier
+  label: How many applications to prepare per day
+  tier: ADVANCED
+  gate: GATE-TIER-CONFIG-CHANGE
+  file: shared/tier-config.yaml
+  default: starter
+  readers:
+  - onboarding
+  panel:
+    when_on: starter — 15 a day. Enough for one person's active search, and a number you can
+      actually review.
+    when_off: max — 200 a day. Your own review throughput becomes the bottleneck, not the
+      pipeline. Nothing sends itself at any tier.
+  values:
+  - starter
+  - pro
+  - max
+- id: SET-CALIBRATION-MODE
+  key: calibration_mode
+  label: Whether match thresholds may adjust themselves
+  tier: ADVANCED
+  gate: GATE-CALIBRATION-CHANGE
+  file: shared/dynamic-target-calibration.yaml
+  default: hybrid
+  readers:
+  - shared
+  panel:
+    when_on: hybrid — the maths runs on schedule, each proposed change is staged, and it only
+      takes effect once you approve it.
+    when_off: auto — thresholds move on their own, logged but not approved. Your bar drifts
+      and you find out from the results.
+  values:
+  - manual
+  - auto
+  - hybrid
+- id: SET-MATCH-SCORE-MINIMUM
+  key: match_score.minimum
+  label: Minimum match score to stage an application
+  tier: ADVANCED
+  gate: GATE-CALIBRATION-CHANGE
+  file: shared/dynamic-target-calibration.yaml
+  default: 70
+  readers:
+  - 00-orchestrator
+  - 03-resume-match
+  - 11-analytics-and-learning
+  - 22-contact-enrichment
+  - ADDENDUM-CHANGELOG.md
+  - AUDIT-TRIAGE.md
+  - README.md
+  - onboarding
+  panel:
+    when_on: 70 by default, 55 if you are starting out. Below it, nothing is staged.
+    when_off: Lower it and you review more, weaker matches. Raise it and a thin market produces
+      an empty queue.
+- id: SET-MATCH-SCORE-STRETCH-FLOOR
+  key: match_score.stretch.floor
+  label: Stretch band floor
+  tier: ADVANCED
+  gate: GATE-CALIBRATION-CHANGE
+  file: shared/target-profile.yaml
+  default: 50
+  readers: []
+  panel:
+    when_on: '50-70 is the stretch band: staged, and tagged STRETCH in the approval message
+      so you know it is a reach before you approve.'
+    when_off: Disable stretch and you only ever see comfortable matches. Most step-up roles
+      live in this band.
+- id: SET-OVERQUALIFICATION-TOLERANCE
+  key: overqualification_tolerance
+  label: How far below your level to consider
+  tier: ADVANCED
+  gate: GATE-CALIBRATION-CHANGE
+  file: shared/dynamic-target-calibration.yaml
+  default: balanced
+  readers:
+  - 03-resume-match
+  - onboarding
+  - shared
+  panel:
+    when_on: balanced — title-seniority and compensation deltas are weighed as two separate
+      axes.
+    when_off: relaxed — roles well below your level reach the queue. Sometimes right in a
+      bad market, expensive in attention otherwise.
+  values:
+  - strict
+  - balanced
+  - relaxed
+- id: SET-EMPLOYMENT-STATUS
+  key: employment_status
+  label: Whether you are currently employed
+  tier: ADVANCED
+  gate: GATE-CALIBRATION-CHANGE
+  file: shared/dynamic-target-calibration.yaml
+  default: unspecified
+  readers:
+  - 00-orchestrator
+  - 07-context-architect
+  - 16-career-pulse
+  - ADDENDUM-CHANGELOG.md
+  - README.md
+  - onboarding
+  - shared
+  panel:
+    when_on: Urgency and volume adapt. Being between roles changes what a sensible daily target
+      is.
+    when_off: unspecified — the pipeline runs at a neutral pace regardless of how urgent your
+      search actually is.
+- id: SET-STEPPING-STONE-MAX-HOPS
+  key: stepping_stone.max_hops
+  label: How many career moves a plan may span
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: 2
+  readers:
+  - 19-career-path-planner
+  panel:
+    when_on: Two hops. A third rests on a profile nobody can predict, and the re-plan rule
+      would regenerate it anyway.
+    when_off: Longer plans read as forecasts. They look impressive and the later hops are
+      fiction.
+  status: UNDOCUMENTED IN CATALOG
+  status_note: Wired and read, but absent from settings-catalog.md, so onboarding never surfaces
+    it.
+- id: SET-STEPPING-STONE-ALLOW-COMP-REGRESSION
+  key: stepping_stone.allow_comp_regression
+  label: Whether a plan may include a pay cut
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: ask
+  readers:
+  - 19-career-path-planner
+  panel:
+    when_on: ask — a step that pays less is shown to you with the reasoning rather than hidden.
+    when_off: never — silently removes most sector switches and management-track entries.
+      A default that hides options is worse than one that asks.
+  values:
+  - ask
+  - never
+  - allow
+  status: UNDOCUMENTED IN CATALOG
+  status_note: Wired and read, but absent from settings-catalog.md, so onboarding never surfaces
+    it.
+- id: SET-STEPPING-STONE-LIQUIDITY-PROBE
+  key: stepping_stone.liquidity_probe
+  label: Check live demand for a planned role
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/target-profile.yaml
+  default: true
+  readers:
+  - 19-career-path-planner
+  panel:
+    when_on: A read-only census of live postings across your sources over 90 days. Queues
+      nothing.
+    when_off: Falls back to taxonomy signals only. A plan can point at a title with no live
+      market.
+  status: UNDOCUMENTED IN CATALOG
+  status_note: Wired and read, but absent from settings-catalog.md, so onboarding never surfaces
+    it.
+- id: SET-TIER3-MONTHLY-BUDGET-USD
+  key: tier3_monthly_budget_usd
+  label: Monthly budget for paid contact lookups
+  tier: ADVANCED
+  gate: GATE-PAID-SPEND
+  file: shared/enrichment-tier-usage.yaml
+  default: 0
+  readers:
+  - 22-contact-enrichment
+  - ADDENDUM-CHANGELOG.md
+  - cron
+  panel:
+    when_on: Zero. The free cascade covers 325+ lookups a month before anything could cost
+      money.
+    when_off: Set a figure and paid lookups run automatically up to it, without asking each
+      time.
+- id: SET-PLAN
+  key: plan
+  label: Your LinkedIn subscription tier
+  tier: ADVANCED
+  gate: GATE-SEND-INMAIL
+  file: shared/target-profile.yaml
+  default: null
+  readers: []
+  panel:
+    when_on: Sets your monthly InMail allowance so the tool knows what it is spending.
+    when_off: Unset, and InMail routing is simply unavailable — every stranger routes through
+      connect-and-wait instead. Not an error state, the honest default.
+  values:
+  - premium_career
+  - premium_business
+  - sales_navigator_core
+  - recruiter_lite
+  - none
+- id: SET-EXCLUDE-DOMAINS
+  key: exclude_domains
+  label: Domains to skip in open-web search
+  tier: ADVANCED
+  gate: GATE-TARGET-PROFILE-WRITE
+  file: shared/sources.yaml
+  default: []
+  readers:
+  - 01-job-discovery
+  - cron
+  panel:
+    when_on: Aggregator sites that republish the same postings stop cluttering the queue.
+    when_off: Empty. Open-web mode surfaces duplicates from scraper sites.
+auto_managed_keys:
+- last_confirmed_at
+- status_changed_at
+- recalibration_log
+- last_recalibrated_at
+- last_confirmed_at
+- sources.id.posted_at
+- last_reviewed_at
+- last_reviewed_at
+- entries.id.target_customer_profile.built_at
+- entries.id.target_customer_profile.confirmed_at
+- entries.id.confirmed_at
+- last_reviewed_at
+- pool.work_items.id.added_at
+- pool.work_items.id.last_reviewed_at
+- pool.artifacts.id.last_checked_at
+- variants.slug.published_at
+- variants.slug.last_gate_pass_at
+- last_updated_at
+- providers.name.used_this_cycle
+- providers.name.cycle_resets_at
+- tier3_cycle_resets_at
+- last_updated_at
+- used_this_cycle
+- available_this_cycle
+- cycle_resets_at
+- credits_refunded_this_cycle
+- open_profile_used_this_cycle
+- last_updated_at

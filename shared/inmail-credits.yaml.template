@@ -1,0 +1,36 @@
+# shared/inmail-credits.yaml — mirrors shared/enrichment-tier-usage.yaml
+# .template's shape (see that file). Auto-updated by 14-social-
+# discovery-outreach on send, not a confirm-gated preference file the
+# way most of this package's config is — only `plan`/`monthly_allowance`
+# are Kene-set, once, matching his actual LinkedIn subscription; see
+# 14-social-discovery-outreach/references/inmail-credits.md for the full reasoning and the plan-tier
+# table this gets seeded from.
+#
+# Copy to shared/inmail-credits.yaml before first use. Until `plan` is
+# set to something other than null/"none", InMail routing is simply
+# unavailable and every LinkedIn-stranger target routes through
+# 14-social-discovery-outreach/references/linkedin-connection-flow.md instead — this file being
+# unconfigured is not an error state, it's the honest default.
+
+plan: null                       # premium_career | premium_business |
+                                   # sales_navigator_core |
+                                   # recruiter_lite | none
+monthly_allowance: null          # 5 | 15 | 50 | 30 respectively — see
+                                   # 14-social-discovery-outreach/references/inmail-credits.md's table;
+                                   # re-verify against LinkedIn's current
+                                   # pricing page before trusting an old
+                                   # number here
+rollover_cap: null                # 15 | 45 | 150 | 120 respectively
+used_this_cycle: 0
+available_this_cycle: null        # derived: monthly_allowance -
+                                    # used_this_cycle + any rollover,
+                                    # capped at rollover_cap
+cycle_resets_at: null
+credits_refunded_this_cycle: 0     # a reply within 90 days refunds the
+                                     # credit — incremented when
+                                     # 11-analytics-and-learning's
+                                     # outcome pass detects one
+open_profile_used_this_cycle: 0    # tracked separately — doesn't draw
+                                     # from the credit balance, Sales
+                                     # Navigator only
+last_updated_at: null

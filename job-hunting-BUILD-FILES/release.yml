@@ -1,0 +1,89 @@
+name: release
+
+# Builds a signed core bundle on tag, and a per-seat bundle on demand when a
+# purchase webhook fires. Private repo: 2,000 free Linux minutes a month, and
+# this workflow runs in about two. You will not approach the limit.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      seat:
+        description: "Seat id to build for (blank = core template)"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest        # never windows/macOS — they drain the free
+    timeout-minutes: 10           # quota at 2x and 10x
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install pyyaml
+
+      # Stage 1. Every checker, before anything is built. A package that fails
+      # its own consistency checks must never reach a customer.
+      - name: Validate
+        run: |
+          set -e
+          for c in check_gates.py check_flows.py check_manifest.py \
+                   check_onboarding.py check_patterns.py; do
+            echo "--- $c"; python3 "$c"
+          done
+          python3 shared/scripts/msg.py check
+          python3 shared/scripts/test_msg.py
+          python3 permissions/scripts/test_permissions.py
+          python3 test_install_check.py
+          python3 test_installer.py
+
+      # Regenerate rather than trust the committed copies — the graph and the
+      # manual are derived artefacts and a stale one is a wrong one.
+      - name: Regenerate derived artefacts
+        run: |
+          python3 extract_graph.py
+          python3 build_docs.py
+
+      - name: Audit strippable content
+        run: python3 build.py audit --src .
+
+      - name: Build bundle
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          SEAT="${{ github.event.inputs.seat }}"
+          SEAT="${SEAT:-core-template}"
+          python3 build.py build --src . --out dist --seat "$SEAT" \
+            --key "$SIGNING_KEY" --skip-validate
+          python3 build.py verify --bundle dist --key "$SIGNING_KEY"
+
+      # Straight to R2. Do NOT upload bundles as Actions artifacts — the free
+      # plan gives 500 MB shared with Packages, and per-seat bundles fill it.
+      - name: Upload to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          SEAT="${{ github.event.inputs.seat }}"; SEAT="${SEAT:-core-template}"
+          tar -czf "bundle-$SEAT.tar.gz" -C dist .
+          aws s3 cp "bundle-$SEAT.tar.gz" \
+            "s3://bundles/$SEAT/" --endpoint-url "$R2_ENDPOINT"
+
+      # Logs only, and only on failure. Never the bundle.
+      - name: Keep logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: "*.log"
+          retention-days: 7
