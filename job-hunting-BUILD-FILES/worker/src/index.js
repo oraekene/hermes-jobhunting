@@ -35,11 +35,11 @@ const err = (msg, status = 400) => json({ error: msg }, status);
 // Bachs allows one primary currency per product and NGN cannot be a currency
 // option on a USD product. So each SKU exists twice and we pick.
 const CATALOG = {
-  base: { NG: "prod_ng_base", INT: "prod_int_base" },
-  "addon-interview": { NG: "prod_ng_interview", INT: "prod_int_interview" },
-  "addon-outreach": { NG: "prod_ng_outreach", INT: "prod_int_outreach" },
-  "addon-direction": { NG: "prod_ng_direction", INT: "prod_int_direction" },
-  "addon-presence": { NG: "prod_ng_presence", INT: "prod_int_presence" },
+  base: { NG: "prod_9bca8de5a3604d1fa813", INT: "prod_92bc1cb4ff014db49966" },
+  "addon-interview": { NG: "prod_256c8a2e733345f9bfea", INT: "prod_2930ed2d84384e24b1f7" },
+  "addon-outreach": { NG: "prod_fd50f2e4bb374c6ebae7", INT: "prod_871143d64fe84d8e89bc" },
+  "addon-direction": { NG: "prod_b751edee9a634cb08d0e", INT: "prod_b690e5a893374e18b54c" },
+  "addon-presence": { NG: "prod_a61c2887b68d47b7baf6", INT: "prod_e94d9bbfc02d4b468876" },
 };
 const ADDONS = Object.keys(CATALOG).filter((k) => k !== "base");
 

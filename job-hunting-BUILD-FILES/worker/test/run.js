@@ -141,15 +141,15 @@ async function main() {
   let j = await r.json();
   check("checkout returns a url only", r.status === 200 && j.checkout_url && !j.product_id);
   check("NG buyer routed to the NGN product",
-    lastCheckout.product_cart[0].product_id === "prod_ng_base");
+    lastCheckout.product_cart[0].product_id === "prod_9bca8de5a3604d1fa813");
 
   await call("POST", "/v1/checkout",
     { body: { email: "x@y.com", skus: ["base"] }, country: "GB" });
   check("GB buyer routed to the USD product",
-    lastCheckout.product_cart[0].product_id === "prod_int_base");
+    lastCheckout.product_cart[0].product_id === "prod_92bc1cb4ff014db49966");
 
   r = await call("POST", "/v1/checkout",
-    { body: { email: "x@y.com", skus: ["prod_int_base"] }, country: "NG" });
+    { body: { email: "x@y.com", skus: ["prod_92bc1cb4ff014db49966"] }, country: "NG" });
   check("client cannot pass a product id", r.status === 400);
 
   check("affiliate referral recorded",
