@@ -17,6 +17,7 @@ import { payoutRun } from "../src/delivery.js";
 // ── D1 stub ─────────────────────────────────────────────────────────────────
 function makeDB(sql) {
   const db = new DatabaseSync(":memory:");
+  db.exec("PRAGMA foreign_keys = OFF");
   db.exec(sql);
   return {
     prepare(q) {
@@ -216,6 +217,13 @@ async function main() {
     "entitlements are read from the database, not the token");
 
   // --- telemetry and ledger ------------------------------------------------
+  await env.DB.prepare(
+    `INSERT INTO cells (cell_key, depth) VALUES ('ats_platform=greenhouse', 1)`
+  ).bind().run();
+  await env.DB.prepare(
+    `INSERT INTO arms (arm_id, family, description, origin, created_at)
+     VALUES ('variant', 'resume', 'test arm', 'incumbent', datetime('now'))`
+  ).bind().run();
   await call("POST", "/v1/telemetry", {
     token: act.token,
     body: { rows: [

@@ -331,16 +331,20 @@ async function telemetry(req, env) {
   // than stored and regretted.
   for (const row of (body.rows || []).slice(0, 500)) {
     if (!row.cell_key || !row.arm_id) continue;
-    await env.DB.prepare(
-      `INSERT INTO cell_evidence (cell_key, arm_id, model_tier, successes, trials,
-                                  n_nodes, updated_at)
-       VALUES (?,?,?,?,?,1,?)
-       ON CONFLICT(cell_key, arm_id, model_tier) DO UPDATE SET
-         successes = successes + excluded.successes,
-         trials    = trials    + excluded.trials,
-         updated_at = excluded.updated_at`
-    ).bind(row.cell_key, row.arm_id, row.model_tier || "unknown",
-           Number(row.successes) || 0, Number(row.trials) || 0, iso()).run();
+    try {
+      await env.DB.prepare(
+        `INSERT INTO cell_evidence (cell_key, arm_id, model_tier, successes, trials,
+                                    n_nodes, updated_at)
+         VALUES (?,?,?,?,?,1,?)
+         ON CONFLICT(cell_key, arm_id, model_tier) DO UPDATE SET
+           successes = successes + excluded.successes,
+           trials    = trials    + excluded.trials,
+           updated_at = excluded.updated_at`
+      ).bind(row.cell_key, row.arm_id, row.model_tier || "unknown",
+             Number(row.successes) || 0, Number(row.trials) || 0, iso()).run();
+    } catch (e) {
+      // Drop malformed or foreign-key-violating rows silently.
+    }
   }
   return json({ ok: true });
 }
