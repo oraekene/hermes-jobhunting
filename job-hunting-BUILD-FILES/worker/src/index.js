@@ -135,10 +135,10 @@ async function createCheckout(req, env) {
     await env.DB.prepare(
       `INSERT INTO referrals (referral_id, affiliate_id, checkout_id, landed_at, ip_country)
        VALUES (?,?,?,?,?)`
-    ).bind(uid(), affiliateId, session.id, iso(), req.headers.get("cf-ipcountry")).run();
+    ).bind(uid(), affiliateId, session.checkout_id, iso(), req.headers.get("cf-ipcountry")).run();
   }
   // The client gets a URL. Never a product id, never a price, never a market.
-  return json({ checkout_url: session.url });
+  return json({ checkout_url: session.checkout_url });
 }
 
 async function bachsWebhook(req, env) {

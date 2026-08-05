@@ -53,7 +53,7 @@ globalThis.fetch = async (url, init) => {
   if (String(url).includes("/checkout-sessions")) {
     lastCheckout = JSON.parse(init.body);
     return new Response(JSON.stringify({
-      id: "chk_test_1", url: "https://checkout.bachs.io/chk_test_1",
+      checkout_id: "chk_test_1", checkout_url: "https://checkout.bachs.io/chk_test_1",
     }), { status: 200, headers: { "content-type": "application/json" } });
   }
   return new Response("{}", { status: 200 });
