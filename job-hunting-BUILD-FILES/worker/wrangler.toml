@@ -1,6 +1,7 @@
 name = "hermes-licensing"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
+account_id = "baadb8542499ad04ed9e0432215f3fb6"
 
 # Free plan works for everything except two jobs (per-seat watermarking and the
 # weekly aggregation) — see INFRASTRUCTURE.md. Move to $5 Workers Paid only
@@ -10,7 +11,7 @@ compatibility_date = "2026-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "hermes"
-database_id = "REPLACE_ME"
+database_id = "bffca84f-cd2c-47e0-90d4-494c89a2b6cf"
 
 [[r2_buckets]]
 binding = "BUNDLES"
