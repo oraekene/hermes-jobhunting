@@ -29,7 +29,7 @@ from pathlib import Path
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-API = os.environ.get("JH_API", "https://hermes-licensing.example.workers.dev")
+API = os.environ.get("JH_API", "https://hermes-licensing.solarsizer.workers.dev")
 STATE = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
 TOKEN_FILE = STATE / "licence-token"
 
