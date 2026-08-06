@@ -23,7 +23,7 @@ through a thirty-day grace period after that. A licensing system that bricks the
 tool when the network drops does not stop piracy; it punishes the customer.
 """
 from __future__ import annotations
-import argparse, base64, hashlib, io, json, os, platform, sys, tarfile, time, urllib.error, urllib.request
+import argparse, base64, hashlib, io, json, os, platform, subprocess, sys, tarfile, time, urllib.error, urllib.request
 from pathlib import Path
 
 from cryptography.exceptions import InvalidSignature
@@ -200,7 +200,7 @@ def cmd_install(a):
     if not check.is_file():
         check = check.with_suffix(".py")
     if check.is_file():
-        os.system(f'"{sys.executable}" "{check}" --root "{dest}"')
+        subprocess.run([sys.executable, str(check), "--root", str(dest)])
 
     print(f"\nInstalled at {dest}")
     print("Open the tool and say hello — it will take you through setup.")
