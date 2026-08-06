@@ -92,6 +92,7 @@ def _call(path, body=None, token=None, raw=False):
         API + path,
         data=json.dumps(body).encode() if body is not None else None,
         headers={"content-type": "application/json",
+                 "user-agent": "hermes-licensing-client/1.0.0",
                  **({"authorization": f"Bearer {token}"} if token else {})},
         method="POST" if body is not None else "GET")
     with urllib.request.urlopen(req, timeout=60) as r:
