@@ -127,7 +127,7 @@ def download(token: str, dest: Path) -> list[str]:
         # Integrity before unpacking, never after. An archive that fails its
         # hash is not opened at all.
         got = hashlib.sha256(blob).hexdigest()
-        if b.get("sha256") and got != b["sha256"]:
+        if b.get("sha256") and got != b["sha256"].lower():
             raise SystemExit(f"The {b['scope']} download did not arrive intact. "
                              f"Nothing has been unpacked. Please try again.")
 
